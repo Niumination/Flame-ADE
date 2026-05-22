@@ -1,0 +1,5 @@
+export { ExplorerPanel } from './ExplorerPanel'
+export { FileTree } from './FileTree'
+export { useExplorer } from './lib/useExplorer'
+export { getFileIcon } from './lib/icons'
+export type { FileEntry } from './lib/fs-bridge'

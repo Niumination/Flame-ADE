@@ -1,0 +1,6 @@
+export { AiPanel } from './components/AiPanel'
+export { useChatStore } from './store/chatStore'
+export { AI_PROVIDERS, getProvider } from './lib/config'
+export type { AiProviderId, AiProviderConfig } from './lib/config'
+export { createProviderInstance } from './lib/provider'
+export { loadAllApiKeys, saveApiKey, loadApiKey, deleteApiKey } from './lib/keychain'

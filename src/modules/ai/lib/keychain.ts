@@ -1,0 +1,59 @@
+import { invoke } from '@tauri-apps/api/core'
+import { useChatStore } from '../store/chatStore'
+import type { AiProviderId } from './config'
+
+const KEYRING_PREFIX = 'flame-ade:api-key:'
+
+export async function loadApiKey(provider: AiProviderId): Promise<string | null> {
+  try {
+    const result = await invoke<{ key: string; exists: boolean }>('secrets_get', {
+      key: `${KEYRING_PREFIX}${provider}`,
+    })
+    if (result.exists) {
+      return result.key
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+export async function saveApiKey(provider: AiProviderId, key: string): Promise<void> {
+  try {
+    await invoke('secrets_set', {
+      key: `${KEYRING_PREFIX}${provider}`,
+      value: key,
+    })
+    useChatStore.getState().setApiKey(provider, key)
+  } catch (e) {
+    console.error('Failed to save API key:', e)
+  }
+}
+
+export async function deleteApiKey(provider: AiProviderId): Promise<void> {
+  try {
+    await invoke('secrets_delete', {
+      key: `${KEYRING_PREFIX}${provider}`,
+    })
+    useChatStore.getState().setApiKey(provider, '')
+  } catch (e) {
+    console.error('Failed to delete API key:', e)
+  }
+}
+
+export async function loadAllApiKeys(): Promise<void> {
+  const providers: AiProviderId[] = [
+    'openai',
+    'anthropic',
+    'google',
+    'groq',
+    'xai',
+    'cerebras',
+  ]
+  for (const provider of providers) {
+    const key = await loadApiKey(provider)
+    if (key) {
+      useChatStore.getState().setApiKey(provider, key)
+    }
+  }
+}
