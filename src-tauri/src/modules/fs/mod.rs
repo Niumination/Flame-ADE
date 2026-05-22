@@ -114,17 +114,21 @@ pub fn fs_read_tree(path: String, depth: Option<usize>) -> Result<Vec<FileEntry>
         }
     }
 
-    // Sort: directories first, then files, alphabetically
+    // Sort: directories first, then symlinks, then files, alphabetically
     entries.sort_by(|a, b| {
-        if a.kind != b.kind {
-            if a.kind == "directory" {
-                std::cmp::Ordering::Less
-            } else {
-                std::cmp::Ordering::Greater
+        let kind_order = |k: &str| -> u8 {
+            match k {
+                "directory" => 0,
+                "symlink" => 1,
+                _ => 2,
             }
-        } else {
-            a.name.to_lowercase().cmp(&b.name.to_lowercase())
+        };
+        let a_order = kind_order(&a.kind);
+        let b_order = kind_order(&b.kind);
+        if a_order != b_order {
+            return a_order.cmp(&b_order);
         }
+        a.name.to_lowercase().cmp(&b.name.to_lowercase())
     });
 
     Ok(entries)
@@ -181,15 +185,19 @@ fn read_children(dir: &Path, depth: usize, count: &mut usize) -> Result<Vec<File
     }
 
     entries.sort_by(|a, b| {
-        if a.kind != b.kind {
-            if a.kind == "directory" {
-                std::cmp::Ordering::Less
-            } else {
-                std::cmp::Ordering::Greater
+        let kind_order = |k: &str| -> u8 {
+            match k {
+                "directory" => 0,
+                "symlink" => 1,
+                _ => 2,
             }
-        } else {
-            a.name.to_lowercase().cmp(&b.name.to_lowercase())
+        };
+        let a_order = kind_order(&a.kind);
+        let b_order = kind_order(&b.kind);
+        if a_order != b_order {
+            return a_order.cmp(&b_order);
         }
+        a.name.to_lowercase().cmp(&b.name.to_lowercase())
     });
 
     Ok(entries)
