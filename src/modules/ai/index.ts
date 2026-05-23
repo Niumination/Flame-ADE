@@ -1,4 +1,5 @@
 export { AiPanel } from './components/AiPanel'
+export { AiDiffPanel } from './components/AiDiffPanel'
 export { useChatStore } from './store/chatStore'
 export { AI_PROVIDERS, getProvider } from './lib/config'
 export type { AiProviderId, AiProviderConfig } from './lib/config'

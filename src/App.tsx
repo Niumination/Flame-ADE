@@ -9,6 +9,7 @@ import { ThemeProvider } from './modules/theme'
 import { loadAllApiKeys } from './modules/ai'
 
 const AiPanel = lazy(() => import('./modules/ai').then(m => ({ default: m.AiPanel })))
+const AiDiffPanel = lazy(() => import('./modules/ai').then(m => ({ default: m.AiDiffPanel })))
 const ExplorerPanel = lazy(() => import('./modules/explorer').then(m => ({ default: m.ExplorerPanel })))
 const GitPanel = lazy(() => import('./modules/git').then(m => ({ default: m.GitPanel })))
 const PreviewPanel = lazy(() => import('./modules/preview').then(m => ({ default: m.PreviewPanel })))
@@ -97,7 +98,7 @@ function AppContent() {
               )}
               {tab.kind === 'ai-diff' && (
                 <Suspense fallback={<div />}>
-                  <PreviewPanel url={tab.cwd || 'http://localhost:5173'} />
+                  <AiDiffPanel />
                 </Suspense>
               )}
               {tab.kind === 'git' && (
