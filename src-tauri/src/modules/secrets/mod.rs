@@ -4,6 +4,40 @@ use tauri;
 
 const KEYRING_SERVICE: &str = "flame-ade";
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_secret_response_serialize() {
+        let response = SecretResponse {
+            key: "my-key".to_string(),
+            exists: true,
+        };
+        let json = serde_json::to_string(&response).unwrap();
+        assert!(json.contains("my-key"));
+        assert!(json.contains("true"));
+    }
+
+    #[test]
+    fn test_secret_response_not_exists() {
+        let response = SecretResponse {
+            key: "nonexistent".to_string(),
+            exists: false,
+        };
+        let json = serde_json::to_string(&response).unwrap();
+        assert!(json.contains("false"));
+    }
+
+    #[test]
+    fn test_secret_response_deserialize() {
+        let json = r#"{"key":"test-key","exists":true}"#;
+        let response: SecretResponse = serde_json::from_str(json).unwrap();
+        assert_eq!(response.key, "test-key");
+        assert!(response.exists);
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SecretResponse {
     pub key: String,

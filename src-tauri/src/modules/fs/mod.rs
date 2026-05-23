@@ -4,6 +4,307 @@ use std::path::{Path, PathBuf};
 use tauri;
 use walkdir::WalkDir;
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs as fs_std;
+
+    #[test]
+    fn test_sanitize_path_denies_env() {
+        let result = sanitize_path("/tmp/.env");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Access denied"));
+    }
+
+    #[test]
+    fn test_sanitize_path_denies_ssh() {
+        let result = sanitize_path("/home/user/.ssh/id_rsa");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Access denied"));
+    }
+
+    #[test]
+    fn test_sanitize_path_denies_pem() {
+        let result = sanitize_path("/home/user/cert.pem");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Access denied"));
+    }
+
+    #[test]
+    fn test_sanitize_path_denies_key() {
+        let result = sanitize_path("/home/user/secret.key");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Access denied"));
+    }
+
+    #[test]
+    fn test_sanitize_path_denies_credentials() {
+        let result = sanitize_path("/home/user/credentials.txt");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Access denied"));
+    }
+
+    #[test]
+    fn test_sanitize_path_case_insensitive_deny() {
+        let result = sanitize_path("/home/user/.SSH/config");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Access denied"));
+    }
+
+    #[test]
+    fn test_sanitize_path_allows_safe_path() {
+        let result = sanitize_path("/tmp");
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_sanitize_path_allows_src_dir() {
+        let manifest = Path::new(env!("CARGO_MANIFEST_DIR"));
+        let src_path = manifest.join("src").to_string_lossy().to_string();
+        let result = sanitize_path(&src_path);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_sanitize_path_nonexistent_parent_allowed() {
+        let result = sanitize_path("/nonexistent_dir_abc123/test.txt");
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_sort_directories_first() {
+        let mut entries = vec![
+            FileEntry {
+                name: "b_file.txt".to_string(),
+                path: "/tmp/b_file.txt".to_string(),
+                kind: "file".to_string(),
+                size: None,
+                children: None,
+            },
+            FileEntry {
+                name: "a_dir".to_string(),
+                path: "/tmp/a_dir".to_string(),
+                kind: "directory".to_string(),
+                size: None,
+                children: None,
+            },
+        ];
+
+        entries.sort_by(|a, b| {
+            let kind_order = |k: &str| -> u8 {
+                match k {
+                    "directory" => 0,
+                    "symlink" => 1,
+                    _ => 2,
+                }
+            };
+            let a_order = kind_order(&a.kind);
+            let b_order = kind_order(&b.kind);
+            if a_order != b_order {
+                return a_order.cmp(&b_order);
+            }
+            a.name.to_lowercase().cmp(&b.name.to_lowercase())
+        });
+
+        assert_eq!(entries[0].kind, "directory");
+        assert_eq!(entries[0].name, "a_dir");
+        assert_eq!(entries[1].kind, "file");
+    }
+
+    #[test]
+    fn test_sort_symlink_middle() {
+        let mut entries = vec![
+            FileEntry {
+                name: "z_file.txt".to_string(),
+                path: "/tmp/z_file.txt".to_string(),
+                kind: "file".to_string(),
+                size: None,
+                children: None,
+            },
+            FileEntry {
+                name: "b_symlink".to_string(),
+                path: "/tmp/b_symlink".to_string(),
+                kind: "symlink".to_string(),
+                size: None,
+                children: None,
+            },
+            FileEntry {
+                name: "a_dir".to_string(),
+                path: "/tmp/a_dir".to_string(),
+                kind: "directory".to_string(),
+                size: None,
+                children: None,
+            },
+        ];
+
+        entries.sort_by(|a, b| {
+            let kind_order = |k: &str| -> u8 {
+                match k {
+                    "directory" => 0,
+                    "symlink" => 1,
+                    _ => 2,
+                }
+            };
+            let a_order = kind_order(&a.kind);
+            let b_order = kind_order(&b.kind);
+            if a_order != b_order {
+                return a_order.cmp(&b_order);
+            }
+            a.name.to_lowercase().cmp(&b.name.to_lowercase())
+        });
+
+        assert_eq!(entries[0].kind, "directory");
+        assert_eq!(entries[1].kind, "symlink");
+        assert_eq!(entries[2].kind, "file");
+    }
+
+    #[test]
+    fn test_denied_path_components_list() {
+        assert!(DENIED_PATH_COMPONENTS.contains(&".env"));
+        assert!(DENIED_PATH_COMPONENTS.contains(&".ssh"));
+        assert!(DENIED_PATH_COMPONENTS.contains(&"id_rsa"));
+        assert!(DENIED_PATH_COMPONENTS.contains(&".pem"));
+        assert!(DENIED_PATH_COMPONENTS.contains(&".key"));
+        assert!(DENIED_PATH_COMPONENTS.contains(&"credentials"));
+        assert_eq!(DENIED_PATH_COMPONENTS.len(), 6);
+    }
+
+    #[test]
+    fn test_fs_exists_safe_path() {
+        let manifest = Path::new(env!("CARGO_MANIFEST_DIR"));
+        let cargo_toml = manifest.join("Cargo.toml").to_string_lossy().to_string();
+        let result = fs_exists(cargo_toml.clone());
+        assert!(result.is_ok());
+        assert!(result.unwrap());
+    }
+
+    #[test]
+    fn test_fs_exists_nonexistent() {
+        let result = fs_exists("/nonexistent_path_xyz_987654/bogus.txt".to_string());
+        assert!(result.is_ok());
+        assert!(!result.unwrap());
+    }
+
+    #[test]
+    fn test_fs_read_file_denied_path() {
+        let result = fs_read_file("/tmp/.env".to_string());
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Access denied"));
+    }
+
+    #[test]
+    fn test_fs_read_file_nonexistent() {
+        let result = fs_read_file("/nonexistent_xyz_98765/file.txt".to_string());
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("File not found"));
+    }
+
+    #[test]
+    fn test_fs_read_file_is_directory() {
+        let manifest = Path::new(env!("CARGO_MANIFEST_DIR"));
+        let src_path = manifest.join("src").to_string_lossy().to_string();
+        let result = fs_read_file(src_path);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Is a directory"));
+    }
+
+    #[test]
+    fn test_fs_search_empty_pattern() {
+        let manifest = Path::new(env!("CARGO_MANIFEST_DIR"));
+        let root = manifest.join("src").to_string_lossy().to_string();
+        let result = fs_search(String::new(), Some(root));
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_fs_search_nonexistent_pattern() {
+        let manifest = Path::new(env!("CARGO_MANIFEST_DIR"));
+        let root = manifest.join("src").to_string_lossy().to_string();
+        let result = fs_search("XYZZYX_NOT_EXISTS_999".to_string(), Some(root));
+        assert!(result.is_ok());
+        assert!(result.unwrap().is_empty());
+    }
+
+    #[test]
+    fn test_fs_grep_simple_pattern() {
+        let manifest = Path::new(env!("CARGO_MANIFEST_DIR"));
+        let root = manifest.join("src").to_string_lossy().to_string();
+        let result = fs_grep("fn main".to_string(), Some(root));
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_fs_write_and_delete_roundtrip() {
+        let tmp = std::env::temp_dir().join("flame_ade_test_write_delete.txt");
+        let tmp_str = tmp.to_string_lossy().to_string();
+
+        let write_result = fs_write_file(tmp_str.clone(), "hello world".to_string());
+        assert!(write_result.is_ok());
+
+        let read_result = fs_read_file(tmp_str.clone());
+        assert!(read_result.is_ok());
+        assert_eq!(read_result.unwrap(), "hello world");
+
+        let delete_result = fs_delete(tmp_str.clone());
+        assert!(delete_result.is_ok());
+        assert!(!tmp.exists());
+    }
+
+    #[test]
+    fn test_fs_create_dir_and_delete() {
+        let tmp = std::env::temp_dir().join("flame_ade_test_dir");
+        let tmp_str = tmp.to_string_lossy().to_string();
+
+        let create_result = fs_create_dir(tmp_str.clone());
+        assert!(create_result.is_ok());
+        assert!(tmp.exists());
+        assert!(tmp.is_dir());
+
+        let delete_result = fs_delete(tmp_str.clone());
+        assert!(delete_result.is_ok());
+        assert!(!tmp.exists());
+    }
+
+    #[test]
+    fn test_fs_rename_roundtrip() {
+        let tmp = std::env::temp_dir();
+        let old = tmp.join("flame_ade_rename_old.txt");
+        let new = tmp.join("flame_ade_rename_new.txt");
+        let old_str = old.to_string_lossy().to_string();
+        let new_str = new.to_string_lossy().to_string();
+
+        fs_std::write(&old, "rename me").unwrap();
+
+        let rename_result = fs_rename(old_str.clone(), new_str.clone());
+        assert!(rename_result.is_ok());
+        assert!(!old.exists());
+        assert!(new.exists());
+
+        let _ = fs_std::remove_file(&new);
+    }
+
+    #[test]
+    fn test_fs_rename_denied_path() {
+        let result = fs_rename("/tmp/.env".to_string(), "/tmp/safe.txt".to_string());
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Access denied"));
+    }
+
+    #[test]
+    fn test_read_tree_nonexistent() {
+        let result = fs_read_tree("/nonexistent_xyz_98765".to_string(), None);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Path does not exist"));
+    }
+
+    #[test]
+    fn test_read_tree_denied_path() {
+        let result = fs_read_tree("/tmp/.env".to_string(), None);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Access denied"));
+    }
+}
+
 const MAX_TREE_DEPTH: usize = 3;
 const MAX_TREE_ENTRIES: usize = 5000;
 

@@ -7,6 +7,78 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use tauri::{Emitter, State};
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_pty_state_new() {
+        let state = PtyState::new();
+        assert!(state.sessions.lock().unwrap().is_empty());
+    }
+
+    #[test]
+    fn test_create_pty_args_deserialize() {
+        let json = r#"{"cols": 80, "rows": 24, "cwd": "/tmp", "shell": "/bin/zsh"}"#;
+        let args: CreatePtyArgs = serde_json::from_str(json).unwrap();
+        assert_eq!(args.cols, 80);
+        assert_eq!(args.rows, 24);
+        assert_eq!(args.cwd, Some("/tmp".to_string()));
+        assert_eq!(args.shell, Some("/bin/zsh".to_string()));
+    }
+
+    #[test]
+    fn test_create_pty_args_minimal() {
+        let json = r#"{"cols": 80, "rows": 24}"#;
+        let args: CreatePtyArgs = serde_json::from_str(json).unwrap();
+        assert_eq!(args.cols, 80);
+        assert_eq!(args.rows, 24);
+        assert!(args.cwd.is_none());
+        assert!(args.shell.is_none());
+    }
+
+    #[test]
+    fn test_pty_event_serialize() {
+        let event = PtyEvent {
+            session_id: "abc-123".to_string(),
+            data: "hello".to_string(),
+        };
+        let json = serde_json::to_string(&event).unwrap();
+        assert!(json.contains("abc-123"));
+        assert!(json.contains("hello"));
+    }
+
+    #[test]
+    fn test_pty_exit_event_serialize() {
+        let event = PtyExitEvent {
+            session_id: "abc-123".to_string(),
+            exit_code: Some(0),
+        };
+        let json = serde_json::to_string(&event).unwrap();
+        assert!(json.contains("abc-123"));
+        assert!(json.contains("0"));
+    }
+
+    #[test]
+    fn test_pty_exit_event_none_code() {
+        let event = PtyExitEvent {
+            session_id: "abc-123".to_string(),
+            exit_code: None,
+        };
+        let json = serde_json::to_string(&event).unwrap();
+        assert!(json.contains("null"));
+    }
+
+    #[test]
+    fn test_scripts_dir_exists() {
+        let scripts_dir = PathBuf::from(SCRIPTS_DIR);
+        assert!(scripts_dir.exists(), "Scripts dir should exist");
+        assert!(scripts_dir.join("zshenv.zsh").exists());
+        assert!(scripts_dir.join("zshrc.zsh").exists());
+        assert!(scripts_dir.join("bashrc.bash").exists());
+    }
+}
+
 const SCRIPTS_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/src/modules/pty/scripts");
 
 fn prepare_zdotdir() -> PathBuf {

@@ -68,3 +68,117 @@ fn test_lib_rs_exists() {
         .join("lib.rs");
     assert!(lib_rs.exists(), "lib.rs should exist");
 }
+
+#[test]
+fn test_main_rs_exists() {
+    let main_rs = Path::new(env!("CARGO_MANIFEST_DIR")).join("main.rs");
+    assert!(main_rs.exists(), "main.rs should exist at {:?}", main_rs);
+}
+
+#[test]
+fn test_build_rs_exists() {
+    let build_rs = Path::new(env!("CARGO_MANIFEST_DIR")).join("build.rs");
+    assert!(build_rs.exists(), "build.rs should exist");
+}
+
+#[test]
+fn test_cargo_toml_exists() {
+    let cargo_toml = Path::new(env!("CARGO_MANIFEST_DIR")).join("Cargo.toml");
+    assert!(cargo_toml.exists(), "Cargo.toml should exist");
+}
+
+#[test]
+fn test_capabilities_exist() {
+    let capabilities = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("capabilities")
+        .join("default.json");
+    assert!(
+        capabilities.exists(),
+        "capabilities/default.json should exist"
+    );
+}
+
+#[test]
+fn test_tauri_config_exists() {
+    let config = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("src-tauri")
+        .join("tauri.conf.json");
+    assert!(
+        config.exists()
+            || Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("tauri.conf.json")
+                .exists(),
+        "tauri.conf.json should exist"
+    );
+}
+
+#[test]
+fn test_pty_zshrc_contains_hooks() {
+    let zshrc = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("src")
+        .join("modules")
+        .join("pty")
+        .join("scripts")
+        .join("zshrc.zsh");
+    let content = std::fs::read_to_string(zshrc).expect("Should read zshrc.zsh");
+    assert!(
+        content.contains("add-zsh-hook"),
+        "Should contain zsh hook registrations"
+    );
+    assert!(content.contains("precmd"), "Should contain precmd hooks");
+    assert!(content.contains("preexec"), "Should contain preexec hooks");
+}
+
+#[test]
+fn test_pty_bashrc_contains_osc() {
+    let bashrc = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("src")
+        .join("modules")
+        .join("pty")
+        .join("scripts")
+        .join("bashrc.bash");
+    let content = std::fs::read_to_string(bashrc).expect("Should read bashrc.bash");
+    assert!(
+        content.contains("OSC 133"),
+        "Should contain OSC 133 markers"
+    );
+}
+
+#[test]
+fn test_frontend_app_entry_exists() {
+    let app = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .join("src")
+        .join("App.tsx");
+    assert!(app.exists(), "App.tsx should exist");
+}
+
+#[test]
+fn test_frontend_main_entry_exists() {
+    let main = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .join("src")
+        .join("main.tsx");
+    assert!(main.exists(), "main.tsx should exist");
+}
+
+#[test]
+fn test_package_json_exists() {
+    let pkg = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .join("package.json");
+    assert!(pkg.exists(), "package.json should exist");
+}
+
+#[test]
+fn test_vitest_config_exists() {
+    let config = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .join("vitest.config.ts");
+    assert!(config.exists(), "vitest.config.ts should exist");
+}

@@ -6,6 +6,70 @@ use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
 use std::time::Duration;
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_shell_state_new() {
+        let state = ShellState::new();
+        assert!(state.sessions.lock().unwrap().is_empty());
+        assert!(state.bg_processes.lock().unwrap().is_empty());
+    }
+
+    #[test]
+    fn test_get_shell_default() {
+        std::env::remove_var("SHELL");
+        let shell = get_shell();
+        assert_eq!(shell, "/bin/bash");
+    }
+
+    #[test]
+    fn test_get_shell_from_env() {
+        std::env::set_var("SHELL", "/bin/zsh");
+        let shell = get_shell();
+        assert_eq!(shell, "/bin/zsh");
+        std::env::set_var("SHELL", "/bin/bash");
+    }
+
+    #[test]
+    fn test_shell_run_result_struct() {
+        let result = ShellRunResult {
+            stdout: "hello".to_string(),
+            stderr: String::new(),
+            exit_code: 0,
+        };
+        assert_eq!(result.stdout, "hello");
+        assert_eq!(result.exit_code, 0);
+    }
+
+    #[test]
+    fn test_wait_with_timeout_immediate() {
+        let child = StdCommand::new("true")
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .unwrap();
+        let result = wait_with_timeout(child, Duration::from_secs(5));
+        assert!(result.is_ok());
+        let output = result.unwrap();
+        assert!(output.status.success());
+    }
+
+    #[test]
+    fn test_wait_with_timeout_timeout_expires() {
+        let child = StdCommand::new("sleep")
+            .arg("10")
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .unwrap();
+        let result = wait_with_timeout(child, Duration::from_millis(100));
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), "timeout");
+    }
+}
+
 // ─── Shell Session ───────────────────────────────────────────
 
 pub struct ShellSession {
