@@ -133,6 +133,14 @@ flame-ade/
 - [x] 5 pre-existing Rust clippy warnings fixed
 - [x] Zero Rust warnings, zero TypeScript errors
 
+### v1.0.0 — Production Release 🚀
+- [x] Version bump 0.6.1 → 1.0.0 across all config files
+- [x] Full 6-area Engon verification: Rust backend ✅, Frontend modules ✅, Compilation ✅, Tests ✅, Documentation ✅, Dev server ✅
+- [x] 52 TypeScript tests + 67 Rust tests — all passing
+- [x] Zero Rust warnings (cargo clippy), zero TypeScript errors (tsc --noEmit)
+- [x] All documentation synced and accurate
+- [x] GitHub release v1.0.0 created with tag
+
 ## Key Decisions
 1. **macOS Tahoe first** — test and optimize for macOS 26.5 before other platforms
 2. **Intel Mac optimized** — ensure smooth performance on 10th gen Intel CPUs

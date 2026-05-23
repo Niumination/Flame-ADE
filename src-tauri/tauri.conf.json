@@ -1,6 +1,6 @@
 {
   "productName": "Flame ADE",
-  "version": "0.6.0",
+  "version": "1.0.0",
   "identifier": "app.flame.ade",
   "build": {
     "beforeDevCommand": "pnpm dev",

@@ -2,6 +2,23 @@
 
 All notable changes to Flame ADE.
 
+## [1.0.0] — 2026-05-23
+
+### Production Release 🚀
+Setelah 6 bulan development, Flame ADE mencapai v1.0.0 — AI-native terminal emulator yang ringan (~6.5 MB DMG), cross-platform, dengan **fokus utama macOS Tahoe 26.5**.
+
+### What's New Since v0.6.1
+- **Version bump** — 0.6.1 → 1.0.0 (stability milestone)
+- **Full production readiness** — seluruh 6 area verifikasi lulus: Rust backend, frontend modules, kompilasi, test coverage, dokumentasi, dev server readiness
+- **52 TypeScript tests + 67 Rust tests** — semuanya passing
+- **Zero Rust warnings, zero TypeScript errors**
+- **Interactive Design System** — `DESIGN.md` (13 sections)
+- **Keyboard shortcuts registry** — Cmd+I/E/T/W/1-9/[/
+- **OpenCode Zen** — default AI provider, 12 models
+- **7 themes** — Dracula, Catppuccin, One Dark + 4 original
+- **Security hardening** — path sanitization, deny-list, capabilities tightened
+- **Auto-updater** — tauri-plugin-updater configured with minisign
+
 ## [0.6.1] — 2026-05-23
 
 ### Critical Bugfixes 🔧

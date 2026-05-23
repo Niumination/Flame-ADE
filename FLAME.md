@@ -69,6 +69,7 @@ All 7 tasks done. Terminal works with multi-tab, PTY backend, shell integration.
 - Keyboard shortcuts registry (Cmd+I/E/T/W/1-9/[/]) ✅
 - Theme expansion: +3 themes (Dracula, Catppuccin, One Dark) = 7 total ✅
 - Interactive Design System: DESIGN.md ✅
+- v1.0.0 production release: version bump, full Engon verification, zero errors/warnings ✅
 
 ### Design Skills — Integrated from Owl-Listener/designer-skills 🎨
 - [x] `ui-design` — 14 sub-skills (color, typography, layout, responsive, visual hierarchy, dark mode, spacing, Gestalt principles) + 4 workflows

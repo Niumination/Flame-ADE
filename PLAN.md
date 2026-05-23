@@ -156,7 +156,9 @@ flame-ade/
 - [x] macOS Tahoe testing
 - [x] Documentation
 
-### v1.0.0 — Release
-- [ ] Cross-platform builds
-- [ ] Stable release
-- [ ] Community launch
+### v1.0.0 — Release ✅
+- [x] Cross-platform builds
+- [x] Stable release
+- [x] Full 6-area Engon verification passed
+- [x] GitHub release v1.0.0 created with tag
+- [ ] Community launch (HN, Reddit, Twitter)
