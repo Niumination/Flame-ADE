@@ -52,6 +52,15 @@ All 7 tasks done. Terminal works with multi-tab, PTY backend, shell integration.
 - Documentation ✅ — all docs synced with implementation
 - Release prep ✅ — bumped to 0.6.0, minisign keys, CSP hardened
 
+### Post-Phase 5 🎯
+- Git init + first commit ✅
+- Runtime sort panic fixed ✅
+- Test infrastructure (vitest + cargo test) ✅
+- shadcn/ui primitives installed (Button) ✅
+- pnpm tauri dev verified ✅
+- Zero Rust warnings, zero TS errors ✅
+- Engon verification skill created ✅
+
 ## Architecture
 
 ### Two-process model

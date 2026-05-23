@@ -154,6 +154,33 @@ All notable changes to Flame ADE.
 - Verifies 6 areas: Rust structure, Frontend, Compilation, Tests, Docs, DevServer
 - Registered as `/engon` command in opencode.json
 
+### Bugfixes & Polish 🔧
+- Fix: runtime panic in sort comparison function (violated total order when comparing file vs symlink)
+- Remove: unused `parking_lot` dependency from Cargo.toml
+- Remove: unused `id` field from PtySession struct
+- Fix: README badge version 0.1.0 → 0.6.0
+- Fix: SECURITY.md supported versions updated
+
+### Test Infrastructure 🧪
+- Setup vitest + @testing-library/react + jsdom
+- `vitest.config.ts` configured with jsdom environment
+- 2 TypeScript smoke tests passing (App.test.tsx)
+- 6 Rust integration tests passing (module existence checks)
+- Pre-configured for future test expansion
+
+### shadcn/ui Primitive ✅
+- Installed: @radix-ui/react-slot, class-variance-authority, tailwind-merge, lucide-react
+- Created `src/components/ui/` directory
+- Button component (with variants: default, destructive, outline, secondary, ghost, link)
+- `components.json` configured for v4 compatibility
+- All CSS variables already in App.css @theme
+
+### Dev Server Verification ✅
+- `pnpm tauri dev` confirmed working:
+  - Vite 7.3.3 server on :1420 ✅
+  - Rust compilation (debug) in ~14s ✅
+  - App binary launches without errors ✅
+
 ## [0.1.0] — Prototype
 
 ### Added

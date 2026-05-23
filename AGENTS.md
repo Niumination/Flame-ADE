@@ -16,7 +16,7 @@ Flame ADE is an open-source AI-native terminal emulator (ADE — Agentic Develop
 - **Terminal**: @xterm/xterm 6 + @xterm/addon-webgl + @xterm/addon-fit
 - **Editor**: CodeMirror 6
 - **AI**: Vercel AI SDK v6
-- **UI**: Tailwind v4, shadcn/ui (pending), motion (pending)
+- **UI**: Tailwind v4, shadcn/ui, motion (pending)
 - **State**: Zustand 5
 
 ## Project Structure
@@ -25,63 +25,18 @@ flame-ade/
 ├── src/                          # React frontend
 │   ├── modules/
 │   │   ├── git/                   # ✅ Git panel
-│   │   │   ├── GitPanel.tsx
-│   │   │   └── index.ts
 │   │   ├── preview/               # ✅ Web preview
-│   │   │   ├── PreviewPanel.tsx
-│   │   │   └── index.ts
 │   │   ├── terminal/             # ✅ xterm.js terminal
-│   │   │   ├── TerminalStack.tsx
-│   │   │   ├── index.ts
-│   │   │   └── lib/
-│   │   │       ├── pty-bridge.ts
-│   │   │       ├── useTerminalSession.ts
-│   │   │       ├── osc-handlers.ts
-│   │   │       └── themes.ts
 │   │   ├── tabs/                 # ✅ Tab management
-│   │   │   ├── TabBar.tsx
-│   │   │   ├── useTabs.ts
-│   │   │   └── index.ts
 │   │   ├── explorer/             # ✅ File explorer
-│   │   │   ├── ExplorerPanel.tsx
-│   │   │   ├── FileTree.tsx
-│   │   │   ├── index.ts
-│   │   │   └── lib/
-│   │   │       └── fs-bridge.ts
 │   │   ├── editor/               # ✅ Code editor
-│   │   │   ├── EditorStack.tsx
-│   │   │   ├── index.ts
-│   │   │   └── lib/
-│   │   │       └── extensions.ts
 │   │   ├── theme/                # ✅ Theme system
-│   │   │   ├── index.ts
-│   │   │   └── lib/
-│   │   │       └── useTheme.tsx
 │   │   ├── header/               # ✅ Top bar
-│   │   │   ├── Header.tsx
-│   │   │   └── index.ts
 │   │   ├── statusbar/            # ✅ Bottom bar
-│   │   │   ├── StatusBar.tsx
-│   │   │   └── index.ts
 │   │   └── ai/                   # ✅ AI subsystem
-│   │       ├── index.ts
-│   │       ├── lib/
-│   │       │   ├── config.ts
-│   │       │   ├── provider.ts
-│   │       │   ├── keychain.ts
-│   │       │   ├── agent-runner.ts
-│   │       │   ├── security.ts
-│   │       │   ├── live-context.ts
-│   │       │   └── skills.ts
-│   │       ├── store/
-│   │       │   ├── chatStore.ts
-│   │       │   └── approvalStore.ts
-│   │       └── components/
-│   │           ├── AiPanel.tsx
-│   │           ├── ApprovalDialog.tsx
-│   │           ├── VoiceInput.tsx
-│   │           └── EditDiff.tsx
-│   ├── components/               # (pending)
+│   ├── components/
+│   │   └── ui/                   # ✅ shadcn/ui primitives (Button)
+│   ├── test/                     # ✅ Vitest setup + smoke tests
 │   ├── lib/
 │   │   └── utils.ts              # ✅ cn() utility
 │   ├── App.tsx                   # ✅ Root coordinator
@@ -94,39 +49,21 @@ flame-ade/
 │   │   └── modules/
 │   │       ├── mod.rs            # ✅ Module registry
 │   │       ├── pty/              # ✅ PTY implementation
-│   │       │   ├── mod.rs        # ✅ pty_create/write/resize/close
-│   │       │   └── scripts/      # ✅ Shell integration
-│   │       │       ├── zshenv.zsh
-│   │       │       ├── zshrc.zsh
-│   │       │       └── bashrc.bash
 │   │       ├── fs/               # ✅ File system commands
-│   │       ├── shell/            # ✅ Shell commands (run, session, bg)
+│   │       ├── shell/            # ✅ Shell commands
 │   │       ├── git/              # ✅ Git commands
-│   │       └── secrets/          # ✅ Keychain (keyring crate, secrets_get/set/delete)
+│   │       └── secrets/          # ✅ Keychain
+│   ├── tests/                    # ✅ Rust integration tests
 │   ├── capabilities/
 │   │   └── default.json          # ✅ Permissions
-│   ├── icons/
-│   │   └── icon.png              # ✅ Placeholder
 │   ├── Cargo.toml                # ✅ Dependencies
 │   ├── tauri.conf.json           # ✅ Window + bundle config
 │   └── build.rs                  # ✅ Tauri build script
+├── vitest.config.ts              # ✅ Vitest config
+├── components.json               # ✅ shadcn/ui config
 ├── package.json                  # ✅ Dependencies + scripts
 ├── vite.config.ts                # ✅ Vite + alias config
-├── tsconfig.json                 # ✅ TypeScript strict mode
-├── tsconfig.node.json            # ✅ Node TypeScript
-├── index.html                    # ✅ HTML entry
-├── opencode.json                 # ✅ OpenCode config
-├── AGENTS.md                     # This file
-├── ARCHITECTURE.md               # Architecture deep dive
-├── WORKFLOW.md                   # Development workflow
-├── FLAME.md                      # Project memory (agent context)
-├── PLAN.md                       # Development plan
-├── CHANGELOG.md                  # ✅ Updated with Phase 4 progress
-├── README.md                     # Project readme
-├── SECURITY.md                   # Security policy
-├── CONTRIBUTING.md               # Contributing guidelines
-└── .gitignore                    # Git ignore rules
-```
+└── opencode.json                 # ✅ OpenCode config
 
 ## Implementation Status
 
@@ -170,6 +107,17 @@ flame-ade/
 - [x] Cross-platform testing — cargo check + tsc verify on macOS x86_64
 - [x] Documentation finalized — all docs synced with code, milestone checklist updated
 - [x] Release prep — version 0.6.0, CSP hardened, updater public key configured inline
+
+### Post-Phase 5 Polish 🎯
+- [x] Git init + first commit (100 files)
+- [x] Fix runtime panic in sort comparator (total order violation)
+- [x] Test infrastructure: vitest + @testing-library (2 smoke tests ✅)
+- [x] Rust integration tests (6 module existence tests ✅)
+- [x] shadcn/ui primitives installed (@radix-ui/react-slot, Button component)
+- [x] `pnpm tauri dev` verified — compiles + launches without errors
+- [x] `pnpm tauri build` — compiles successfully (full release build takes ~5m)
+- [x] Zero Rust warnings, zero TypeScript errors
+- [x] Engon verification skill created
 
 ## Key Decisions
 1. **macOS Tahoe first** — test and optimize for macOS 26.5 before other platforms
