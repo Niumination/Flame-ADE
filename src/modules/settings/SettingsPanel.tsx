@@ -3,6 +3,7 @@ import { useTheme, themes } from '../theme'
 import { useChatStore } from '../ai/store/chatStore'
 import { AI_PROVIDERS, getProvider } from '../ai/lib/config'
 import { saveApiKey, loadAllApiKeys } from '../ai/lib/keychain'
+import { getBindings } from '../shortcuts'
 import type { AiProviderId } from '../ai/lib/config'
 
 const FONT_SIZES = [12, 13, 14, 15, 16, 18, 20]
@@ -117,9 +118,26 @@ export function SettingsPanel() {
         </section>
 
         <section className="space-y-2">
+          <h3 className="text-xs font-medium text-foreground">Keyboard Shortcuts</h3>
+          <div className="text-[10px] text-muted-foreground space-y-1">
+            {getBindings().map((b, i) => (
+              <div key={i} className="flex justify-between">
+                <span>{b.description}</span>
+                <span className="font-mono text-foreground/70">
+                  {b.meta ? '⌘' : ''}{b.shift ? '⇧' : ''}{b.ctrl ? '^' : ''}{b.alt ? '⌥' : ''}{b.key === ' ' ? 'Space' : b.key === 'ArrowLeft' ? '←' : b.key === 'ArrowRight' ? '→' : b.key.toUpperCase()}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="space-y-2">
           <h3 className="text-xs font-medium text-foreground">About</h3>
           <p className="text-[10px] text-muted-foreground">
-            Flame ADE v0.6.0 — AI-native terminal emulator
+            Flame ADE v0.6.1 — AI-native Agentic Development Environment
+          </p>
+          <p className="text-[10px] text-muted-foreground">
+            Built with Tauri 2 + Rust + React 19. Default AI: OpenCode Zen.
           </p>
         </section>
       </div>

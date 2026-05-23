@@ -13,6 +13,10 @@ All notable changes to Flame ADE.
 
 ### New Features ✨
 - **Settings module** (`src/modules/settings/`) — Theme selector (dark/light/Tokyo Night/Nord), font size (12–20px), AI provider configuration. Accessible via ⚙ button in header or `settings` tab kind.
+- **OpenCode Zen integration** (`config.ts`, `provider.ts`, `chatStore.ts`) — OpenCode Zen sebagai default AI provider. Auto-load API key dari keychain. Provider ID `opencode-zen`, base URL `https://opencode.ai/zen/v1`, 12 models (Claude Sonnet 4-5, GPT 5.x, Gemini 3, Big Pickle, free models). Users can bring their own OpenCode Zen API key.
+- **Keyboard shortcuts registry** (`src/modules/shortcuts/`) — Sistem shortcut terpusat. Shortcuts: Cmd+I (AI), Cmd+E (explorer), Cmd+T (new terminal), Cmd+W (close tab), Cmd+1-9 (switch tab), Cmd+Shift+[/] (prev/next tab). Ditampilkan di Settings.
+- **Theme expansion** — 3 new themes: Dracula, Catppuccin Mocha, One Dark (total 7 themes).
+- **Interactive Design System** (`DESIGN.md`) — Comprehensive design document: color system, typography scale, spacing system, layout architecture, block model, AI integration patterns, motion system, accessibility, component tokens, implementation roadmap.
 
 ### Cleanup 🧹
 - Fixed 5 pre-existing Rust clippy warnings: `manual_flatten`, `unnecessary_map_or`, 2× `unnecessary_cast`, `write_with_newline`.

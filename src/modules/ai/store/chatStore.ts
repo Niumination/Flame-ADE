@@ -40,8 +40,8 @@ let sessionCounter = 0
 export const useChatStore = create<ChatStore>((set, get) => ({
   sessions: [],
   activeSessionId: null,
-  provider: 'openai',
-  model: 'gpt-4o',
+  provider: 'opencode-zen',
+  model: 'claude-sonnet-4-5',
   apiKeys: {},
 
   createSession: (provider?: AiProviderId, model?: string) => {

@@ -7,6 +7,7 @@ import { Header } from './modules/header'
 import { StatusBar } from './modules/statusbar'
 import { ThemeProvider } from './modules/theme'
 import { loadAllApiKeys } from './modules/ai'
+import { registerShortcut, matchBinding } from './modules/shortcuts'
 
 const AiPanel = lazy(() => import('./modules/ai').then(m => ({ default: m.AiPanel })))
 const AiDiffPanel = lazy(() => import('./modules/ai').then(m => ({ default: m.AiDiffPanel })))
@@ -32,14 +33,69 @@ function AppContent() {
   }, [])
 
   useEffect(() => {
+    const unregisters: (() => void)[] = []
+
+    unregisters.push(registerShortcut({
+      key: 'i', meta: true, description: 'Toggle AI panel',
+      handler: () => setShowAi((p) => !p),
+    }))
+
+    unregisters.push(registerShortcut({
+      key: 'e', meta: true, description: 'Toggle explorer',
+      handler: () => setShowExplorer((p) => !p),
+    }))
+
+    unregisters.push(registerShortcut({
+      key: 't', meta: true, description: 'New terminal tab',
+      handler: () => addTab({ kind: 'terminal', label: `Terminal ${tabs.length + 1}` }),
+    }))
+
+    unregisters.push(registerShortcut({
+      key: 'w', meta: true, description: 'Close tab',
+      handler: () => { if (activeTabId) useTabs.getState().removeTab(activeTabId) },
+    }))
+
+    for (let i = 1; i <= 9; i++) {
+      const idx = i - 1
+      unregisters.push(registerShortcut({
+        key: String(i), meta: true, description: `Switch to tab ${i}`,
+        handler: () => {
+          const t = useTabs.getState().tabs
+          if (t[idx]) useTabs.getState().setActiveTab(t[idx].id)
+        },
+      }))
+    }
+
+    unregisters.push(registerShortcut({
+      key: ']', meta: true, shift: true, description: 'Next tab',
+      handler: () => {
+        const s = useTabs.getState()
+        const idx = s.tabs.findIndex((t) => t.id === s.activeTabId)
+        if (idx >= 0 && idx < s.tabs.length - 1) s.setActiveTab(s.tabs[idx + 1].id)
+      },
+    }))
+
+    unregisters.push(registerShortcut({
+      key: '[', meta: true, shift: true, description: 'Previous tab',
+      handler: () => {
+        const s = useTabs.getState()
+        const idx = s.tabs.findIndex((t) => t.id === s.activeTabId)
+        if (idx > 0) s.setActiveTab(s.tabs[idx - 1].id)
+      },
+    }))
+
     const handler = (e: KeyboardEvent) => {
-      if (e.metaKey && e.key === 'i') {
+      const binding = matchBinding(e)
+      if (binding) {
         e.preventDefault()
-        setShowAi((p) => !p)
+        binding.handler()
       }
     }
     window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
+    return () => {
+      window.removeEventListener('keydown', handler)
+      unregisters.forEach((u) => u())
+    }
   }, [])
 
   const handleFileSelect = useCallback(async (path: string) => {

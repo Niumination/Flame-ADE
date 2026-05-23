@@ -22,6 +22,7 @@ Flame ADE is an open-source AI-native terminal emulator (ADE — Agentic Develop
 ## Project Structure
 ```
 flame-ade/
+├── DESIGN.md                     # ✅ Interactive Design System
 ├── src/                          # React frontend
 │   ├── modules/
 │   │   ├── git/                   # ✅ Git panel
@@ -33,7 +34,9 @@ flame-ade/
 │   │   ├── theme/                # ✅ Theme system
 │   │   ├── header/               # ✅ Top bar
 │   │   ├── statusbar/            # ✅ Bottom bar
-│   │   └── ai/                   # ✅ AI subsystem
+│   │   ├── ai/                   # ✅ AI subsystem
+│   │   ├── shortcuts/            # ✅ Keyboard shortcuts
+│   │   └── settings/             # ✅ Settings panel
 │   ├── components/
 │   │   └── ui/                   # ✅ shadcn/ui primitives (Button)
 │   ├── test/                     # ✅ Vitest setup + smoke tests
@@ -123,6 +126,10 @@ flame-ade/
 - [x] Fix CSP blocking preview iframes — `frame-src` added to CSP
 - [x] Fix Preview `onUrlChange` not passed — `previewUrls` state + callback wired
 - [x] New Settings module — theme, font size, AI provider config (⚙ button in header)
+- [x] OpenCode Zen sebagai default AI provider — `opencode-zen` sebagai provider pertama di config, 12 models
+- [x] Keyboard shortcuts registry — `src/modules/shortcuts/` dengan sistem shortcut terpusat
+- [x] Theme expansion — +3 themes (Dracula, Catppuccin, One Dark) = 7 total
+- [x] Interactive Design System — `DESIGN.md` komprehensif
 - [x] 5 pre-existing Rust clippy warnings fixed
 - [x] Zero Rust warnings, zero TypeScript errors
 

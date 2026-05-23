@@ -49,6 +49,33 @@ export const themes: Record<string, ThemeColors> = {
     primary: '#81a1c1',
     destructive: '#bf616a',
   },
+  dracula: {
+    background: '#282a36',
+    foreground: '#f8f8f2',
+    muted: '#44475a',
+    mutedForeground: '#6272a4',
+    border: '#44475a',
+    primary: '#bd93f9',
+    destructive: '#ff5555',
+  },
+  catppuccin: {
+    background: '#1e1e2e',
+    foreground: '#cdd6f4',
+    muted: '#313244',
+    mutedForeground: '#6c7086',
+    border: '#45475a',
+    primary: '#89b4fa',
+    destructive: '#f38ba8',
+  },
+  oneDark: {
+    background: '#1e2127',
+    foreground: '#abb2bf',
+    muted: '#2c323c',
+    mutedForeground: '#565c64',
+    border: '#3b4048',
+    primary: '#61afef',
+    destructive: '#e06c75',
+  },
 }
 
 interface ThemeContextValue {
@@ -68,7 +95,7 @@ const ThemeContext = createContext<ThemeContextValue>({
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState('dark')
   const colors = themes[theme] || themes.dark
-  const isDark = theme === 'dark' || theme === 'tokyoNight' || theme === 'nord'
+  const isDark = theme === 'dark' || theme === 'tokyoNight' || theme === 'nord' || theme === 'dracula' || theme === 'catppuccin' || theme === 'oneDark'
 
   const setTheme = useCallback((name: string) => {
     if (themes[name]) {

@@ -43,6 +43,7 @@ export async function deleteApiKey(provider: AiProviderId): Promise<void> {
 
 export async function loadAllApiKeys(): Promise<void> {
   const providers: AiProviderId[] = [
+    'opencode-zen',
     'openai',
     'anthropic',
     'google',

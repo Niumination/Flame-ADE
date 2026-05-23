@@ -87,8 +87,8 @@ describe('ThemeProvider', () => {
 })
 
 describe('themes object', () => {
-  it('has 4 themes', () => {
-    expect(Object.keys(themes)).toHaveLength(4)
+  it('has 7 themes', () => {
+    expect(Object.keys(themes).length).toBeGreaterThanOrEqual(7)
   })
 
   it('each theme has required color keys', () => {

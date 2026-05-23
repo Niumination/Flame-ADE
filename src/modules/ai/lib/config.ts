@@ -6,6 +6,7 @@ export type AiProviderId =
   | 'xai'
   | 'cerebras'
   | 'openai-compatible'
+  | 'opencode-zen'
 
 export interface AiProviderConfig {
   id: AiProviderId
@@ -67,8 +68,29 @@ export const AI_PROVIDERS: AiProviderConfig[] = [
     defaultModel: 'custom',
     baseUrl: 'http://localhost:1234/v1',
   },
+  {
+    id: 'opencode-zen',
+    name: 'OpenCode Zen',
+    models: [
+      'claude-sonnet-4-5',
+      'claude-haiku-4-5',
+      'gpt-5.2-codex',
+      'gpt-5.2',
+      'gpt-5.1-codex',
+      'gemini-3-pro',
+      'gemini-3-flash',
+      'big-pickle',
+      'deepseek-v4-flash-free',
+      'minimax-m2.5-free',
+      'nemotron-3-super-free',
+      'qwen3-coder-480b',
+    ],
+    needsApiKey: true,
+    defaultModel: 'claude-sonnet-4-5',
+    baseUrl: 'https://opencode.ai/zen/v1',
+  },
 ]
 
 export function getProvider(id: AiProviderId): AiProviderConfig {
-  return AI_PROVIDERS.find((p) => p.id === id) || AI_PROVIDERS[0]
+  return AI_PROVIDERS.find((p) => p.id === id) || AI_PROVIDERS[AI_PROVIDERS.length - 1]
 }
