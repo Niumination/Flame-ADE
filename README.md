@@ -1,121 +1,290 @@
-# Flame ADE
+# 🔥 Flame ADE
 
-**Open-source lightweight cross-platform AI-native terminal (ADE)**
+**Lightweight AI-native terminal emulator (ADE) — Tauri 2 + Rust + React 19**
 
-Flame ADE is a fast, lightweight AI terminal (ADE) built on Tauri 2 + Rust and React 19. It pairs a native PTY backend with a modern UI — multi-tab terminals, an integrated code editor, a file explorer, and a first-class AI side-panel that works with your own API keys (or fully local models via LM Studio). Under 10 MB on disk, no telemetry, keys stored in the OS keychain.
+[![version](https://img.shields.io/badge/version-0.6.0--dev-blue?style=flat-square)]()
+[![license](https://img.shields.io/badge/license-Apache--2.0-green?style=flat-square)]()
+[![platform](https://img.shields.io/badge/platform-macOS%20|%20Linux%20|%20Windows-lightgrey?style=flat-square)]()
+[![CI](https://img.shields.io/badge/CI-passing-brightgreen?style=flat-square)]()
+[![Rust](https://img.shields.io/badge/Rust-1.95.0-orange?style=flat-square)]()
+[![PRs](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)]()
 
-**Primary Target**: macOS Tahoe 26.5 (Hackintosh optimized)
+Flame ADE pairs a **native PTY backend** (Rust + `portable-pty`) with a **modern React UI** — multi-tab terminals, an integrated CodeMirror 6 editor, a file explorer, web preview, Git panel, and a first-class **BYOK AI side-panel** that works with your own API keys or fully local models via LM Studio.
 
-[![version](https://img.shields.io/badge/version-0.6.0--dev-blue)]()
-[![license](https://img.shields.io/badge/license-Apache--2.0-green)]()
-[![platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey)]()
+**~7 MB on disk · No telemetry · Keys in OS keychain only**
 
----
-
-## Screenshots
-
-_Coming soon_
-
----
-
-## Features
-
-### Terminal
-- xterm.js + WebGL renderer, multi-tab with background streaming
-- Native PTY backend via `portable-pty` (zsh, bash, pwsh, …)
-- Shell integration (cwd reporting, prompt markers) via injected init scripts
-- Inline search, link detection, true-color
-
-### Editor
-- CodeMirror 6 with language support for TS/JS, Rust, Python, HTML/CSS, JSON, Markdown
-- Inline AI autocomplete and AI edit diffs
-- Vim mode
-- Prebuilt themes: Tokyo Night, Nord, GitHub, Atom One, Aura, Copilot, Xcode
-
-### File Explorer
-- Catppuccin icon theme (Material Icon Theme resolver)
-- Fuzzy search, keyboard navigation, inline rename, context actions
-
-### Web Preview
-- Auto-detects local dev servers and opens them in a preview tab
-
-### AI (BYOK)
-- Providers: OpenAI, Anthropic, Google, Groq, xAI, Cerebras, OpenAI-compatible
-- Local / offline models via LM Studio
-- Voice input, edit diffs, multi-agent and sub-agents
-- Snippets / skills, customizable system prompt
-- `FLAME.md` for project memory and configuration
-- Tasks, plans, search, file read/write tools with approval flow
-
-### Quality
-- Lightweight and fast (~7 MB bundle)
-- API keys stored in the OS keychain
-- No telemetry, no account required
+**Primary target**: macOS Tahoe 26.5 (Hackintosh Intel i5-10310U optimized)
 
 ---
 
-## Configure AI
+## ✨ Features
 
-1. Open **Settings → AI**.
-2. Pick a provider and paste your API key. For local inference, point Flame ADE at your LM Studio endpoint.
-3. Keys are written to the OS keychain via `keyring` — they never touch disk or `localStorage`.
+### 🖥️ Terminal
+| Feature | Status |
+|---------|--------|
+| xterm.js + WebGL renderer (GPU-accelerated) | ✅ |
+| Multi-tab with background streaming (tabs stay alive when hidden) | ✅ |
+| Native PTY via `portable-pty` (zsh, bash, fish, pwsh) | ✅ |
+| Shell integration — OSC 7 (cwd) + OSC 133 (prompt boundaries) | ✅ |
+| True-color, font ligatures, link detection | ✅ |
+| Auto-injected init scripts (no manual shell config) | ✅ |
+
+### 📝 Editor
+| Feature | Status |
+|---------|--------|
+| CodeMirror 6 — TS/JS, Rust, Python, HTML/CSS, JSON, Markdown, Go, C/C++ | ✅ |
+| Vim mode (`@replit/codemirror-vim`) | ✅ |
+| Multiple themes: Tokyo Night, Nord, GitHub, Atom One, Aura, Copilot, Xcode | ✅ |
+| Inline AI autocomplete | ✅ |
+
+### 📂 File Explorer
+- Directory tree with Catppuccin/Material icons
+- Fuzzy search with keyboard navigation
+- Inline rename, context actions (create, delete, rename)
+- Backslash-aware cross-platform paths
+
+### 🌐 Web Preview
+- Sandboxed iframe (`allow-scripts allow-same-origin`)
+- URL input bar with Go button
+- Auto-detects local dev servers
+- Loading state + error handling
+
+### ⎇ Git Panel
+| View | Features |
+|------|----------|
+| **Changes** | Staging with checkboxes, per-file diff viewer, commit message input |
+| **Log** | Commit history (hash + message) |
+| **Branches** | List local branches, switch with one click |
+
+### 🤖 AI (BYOK — Bring Your Own Key)
+
+| Feature | Status |
+|---------|--------|
+| Multi-provider: OpenAI, Anthropic, Google, Groq, xAI, Cerebras | ✅ |
+| OpenAI-compatible custom endpoint (LM Studio for local/offline) | ✅ |
+| Agent system with sub-agents + tools | ✅ |
+| Slash commands: `/explain`, `/fix`, `/test`, `/refactor`, `/docs` | ✅ |
+| Approval flow for dangerous operations (write, run, delete) | ✅ |
+| Voice input (Web Speech API) | ✅ |
+| AI edit diffs — side-by-side, per-hunk accept/reject | ✅ |
+| Session management with persistence | ✅ |
+| Project memory via `FLAME.md` | ✅ |
+
+### 🛡️ Security
+| Measure | Status |
+|---------|--------|
+| API keys in OS keychain only (never localStorage/disk) | ✅ |
+| Path traversal protection (canonicalize + deny-list) | ✅ |
+| SSRF + DNS rebinding defense on AI HTTP | ✅ |
+| Sandboxed iframe for web preview | ✅ |
+| CSP hardened | ✅ |
+| No telemetry, no analytics, no account | ✅ |
+| Minisign-signed release artifacts | ✅ |
 
 ---
 
-## Build from source
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Rust (stable) — [https://rustup.rs](https://rustup.rs)
-- Node 20+ and [pnpm](https://pnpm.io)
-- Platform-specific Tauri prerequisites — [https://tauri.app/start/prerequisites/](https://tauri.app/start/prerequisites/)
+```bash
+# Rust (stable)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-### Run
+# pnpm
+brew install pnpm   # macOS
+# or: npm i -g pnpm
+
+# Tauri system deps
+# macOS: brew install pkg-config
+# Linux: see https://tauri.app/start/prerequisites/
+```
+
+### Run from source
 
 ```bash
+git clone https://github.com/your-org/flame-ade.git
+cd flame-ade
 pnpm install
-pnpm tauri dev          # development
-pnpm tauri build        # production bundle
+pnpm tauri dev
 ```
 
-### Checks
+Dev mode starts:
+- **Vite** dev server at `http://localhost:1420` (hot-reload frontend)
+- **Rust** backend compiles (~14s debug, ~5m release)
+
+### Production build
 
 ```bash
-pnpm exec tsc --noEmit          # frontend type-check
-cd src-tauri && cargo clippy    # Rust lint
+pnpm tauri build
 ```
 
----
-
-## Tech stack
-
-Tauri 2 · Rust · `portable-pty` · React 19 · TypeScript · xterm.js · CodeMirror 6 · Vercel AI SDK v6 · Tailwind v4 · shadcn/ui · Zustand
+Output bundle in `src-tauri/target/release/bundle/`.
 
 ---
 
-## macOS Tahoe Notes
+## 🧪 Tests
 
-Flame ADE is primarily developed and tested on **macOS Tahoe 26.5** running on Hackintosh hardware (ThinkPad X13 Yoga Gen 1, Intel i5-10310U).
+```bash
+# TypeScript (vitest)
+pnpm test
 
-- Window management uses `titleBarStyle: Overlay` with native traffic lights
-- WebGL rendering optimized for Intel UHD Graphics
-- Shell integration tested with macOS default zsh
-- Keychain integration verified with Tahoe security model
+# Rust (unit + integration)
+cd src-tauri && cargo test
 
----
+# Type check
+pnpm exec tsc --noEmit
 
-## Contributing
+# Rust lint
+cd src-tauri && cargo clippy
+```
 
-Issues and PRs are welcome! Feel free to open issues, suggest features, or submit pull requests.
-
----
-
-## License
-
-Flame ADE is licensed under the Apache-2.0 License.
+**Current coverage**: 67 Rust tests (50 unit + 17 integration) + 2 TypeScript smoke tests.
 
 ---
 
-## About
+## ⌨️ Keyboard Shortcuts
 
-Lightweight (7MB) AI terminal emulator (ADE) built in Rust & Tauri & React
+| Shortcut | Action |
+|----------|--------|
+| `Cmd+I` | Toggle AI panel |
+| `Cmd+W` | Close active tab |
+| `Cmd+T` | New terminal tab |
+| `Enter` (chat) | Send AI message |
+| `↑` (chat) | Edit last message |
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│                Webview (React 19)                   │
+│  ┌──────────┬──────────┬──────────┬──────────┐     │
+│  │ Terminal │  Editor  │ Explorer │    AI    │     │
+│  │ xterm.js │ CM 6     │  Tree    │ Panel    │     │
+│  └────┬─────┴────┬─────┴────┬─────┴────┬─────┘     │
+│       │          │          │          │            │
+│  ┌────┴──────────┴──────────┴──────────┴─────┐     │
+│  │       IPC (invoke / Channel events)        │     │
+│  └────────────────────┬───────────────────────┘     │
+├───────────────────────┼─────────────────────────────┤
+│               Rust Backend (Tauri 2)                │
+│  ┌──────────┬──────────┬──────────┬──────────┐     │
+│  │   PTY    │    FS    │  Shell   │   Git    │     │
+│  │portable  │ tree,    │ run,     │ status,  │     │
+│  │ -pty     │ search,  │ session, │ diff,    │     │
+│  │          │ grep     │ bg       │ commit   │     │
+│  ├──────────┴──────────┴──────────┴──────────┤     │
+│  │              Secrets (keyring)             │     │
+│  └────────────────────────────────────────────┘     │
+└─────────────────────────────────────────────────────┘
+```
+
+### Two-Process Model
+- **Rust backend** owns all OS access (PTY, FS, shell, git, keychain)
+- **React webview** owns the UI — communicates exclusively via IPC
+- Crash in one process doesn't take down the other
+- Webview never touches the filesystem or processes directly
+
+---
+
+## 🔧 Configuration
+
+### AI Providers
+
+1. Open **Settings → AI** (or click 🤖 in header)
+2. Pick a provider from the dropdown
+3. Paste your API key (stored in **OS keychain**, never on disk)
+4. For local models: select "OpenAI-compatible" → point to `http://localhost:1234/v1`
+
+### Keychains
+
+| OS | Backend |
+|----|---------|
+| macOS | Native Keychain (apple-native) |
+| Linux | Secret Service / file fallback |
+| Windows | Credential Manager |
+
+### Project Memory
+
+Place a `FLAME.md` in your workspace root — Flame ADE reads it as agent context (similar to `AGENTS.md` / `CLAUDE.md`).
+
+---
+
+## 📦 Bundle Targets
+
+| Platform | Format | Min Version |
+|----------|--------|-------------|
+| macOS (x86_64 + arm64) | .dmg | 10.15 |
+| Linux | .deb / .rpm / AppImage | — |
+| Windows | NSIS installer | Windows 10+ |
+
+---
+
+## 📚 Documentation
+
+| File | Description |
+|------|-------------|
+| [AGENTS.md](./AGENTS.md) | Project context for AI agents |
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | Deep dive into system design |
+| [WORKFLOW.md](./WORKFLOW.md) | Daily development workflow |
+| [FLAME.md](./FLAME.md) | Project memory / living architecture |
+| [PLAN.md](./PLAN.md) | Development roadmap |
+| [CHANGELOG.md](./CHANGELOG.md) | Release history |
+| [SECURITY.md](./SECURITY.md) | Security policy |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | Contribution guide |
+
+---
+
+## 🤝 Contributing
+
+PRs welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+
+Key points:
+- Branch from `develop`, PR back to `develop`
+- Run `pnpm exec tsc --noEmit` and `cargo clippy` before committing
+- Write tests for new features
+
+---
+
+## 🧑‍💻 Development
+
+### Daily workflow
+
+```bash
+opencode              # OpenCode AI session
+pnpm tauri dev        # Start dev server
+# ... make changes ...
+pnpm exec tsc --noEmit
+cd src-tauri && cargo clippy
+pnpm test && cd src-tauri && cargo test
+git add -A && git commit -m "feat: description"
+```
+
+### OpenCode commands
+
+| Command | Agent |
+|---------|-------|
+| `/dev` | Start Tauri dev server |
+| `/build` | Production build |
+| `/lint` | TypeScript + Rust lint |
+| `/test` | Run all tests |
+| `/engon` | Full project verification |
+
+---
+
+## 📄 License
+
+Apache-2.0 — see [LICENSE](./LICENSE).
+
+---
+
+## 🙏 Acknowledgments
+
+- [Terax AI](https://terax.ai) — design inspiration
+- [Tauri 2](https://tauri.app) — app framework
+- [Vercel AI SDK](https://sdk.vercel.ai) — AI integration
+- [xterm.js](https://xtermjs.org) — terminal emulator
+- [CodeMirror 6](https://codemirror.net) — code editor
+- [portable-pty](https://github.com/wez/wezterm) — PTY backend

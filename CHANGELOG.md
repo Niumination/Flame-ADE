@@ -186,13 +186,23 @@ All notable changes to Flame ADE.
   - TypeScript type check (`tsc --noEmit`)
   - Vitest test runner (`pnpm test`)
   - Rust cargo check + clippy (0 warnings enforced)
-  - Rust cargo test (6/6 integration tests)
+  - Rust cargo test (67 tests)
   - Tauri build (macOS + Linux x86_64)
 - `.github/workflows/release.yml` — Release workflow on tag push `v*`:
   - Build matrix: macOS x86_64 + Linux x86_64
   - Minisign signing of all bundle artifacts
   - Upload artifacts + GitHub Release (draft, auto-generated notes from CHANGELOG)
 - PNPM lockfile verified (151KB, 52 packages)
+
+### Rust Test Expansion 🧪 (67 total → 50 unit + 17 integration)
+- **Unit tests**: sanitize_path (deny-list, case, roundtrip), sort ordering (dir/symlink/file), fs CRUD roundtrips, git serialization + commands, pty structs + scripts, secrets serialization, shell state + timeout
+- **Integration tests**: all module files, config files, frontend entry points, pty script content verification
+
+### Documentation Finalization 📚
+- README completely rewritten with feature tables, architecture diagram, badge bar, keyboard shortcuts, test commands, config guide, bundle targets, and full doc index
+- SECURITY.md fully updated — all 24 checklist items checked and detailed, vulnerability reporting process, audit commands
+- CONTRIBUTING.md expanded — branching strategy, code standards per language, testing guidelines, security considerations, project structure reference
+- LICENSE file added (Apache-2.0 full text)
 
 ## [0.1.0] — Prototype
 
