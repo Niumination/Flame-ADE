@@ -10,6 +10,7 @@ use modules::git;
 use modules::pty::{self, PtyState};
 use modules::secrets;
 use modules::shell::{self, ShellState};
+use modules::terminal;
 #[cfg(debug_assertions)]
 use tauri::Manager;
 
@@ -54,6 +55,8 @@ pub fn run() {
             git::git_commit,
             git::git_branches,
             git::git_checkout,
+            terminal::terminal_list_apps,
+            terminal::terminal_open,
         ])
         .setup(|_app| {
             #[cfg(debug_assertions)]

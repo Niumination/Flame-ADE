@@ -6,7 +6,8 @@ import { EditorStack } from './modules/editor'
 import { Header } from './modules/header'
 import { StatusBar } from './modules/statusbar'
 import { ThemeProvider } from './modules/theme'
-import { loadAllApiKeys } from './modules/ai'
+import { useTerminalPrefs } from './modules/terminal/lib/useTerminalPrefs'
+import { useWorkspace } from './modules/explorer/lib/useWorkspace'
 import { registerShortcut, matchBinding } from './modules/shortcuts'
 
 const AiPanel = lazy(() => import('./modules/ai').then(m => ({ default: m.AiPanel })))
@@ -25,11 +26,14 @@ function AppContent() {
   const [showAi, setShowAi] = useState(false)
   const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({})
   const fileContents = useRef<Map<string, string>>(new Map())
+  const loadTerminalApps = useTerminalPrefs((s) => s.loadApps)
+  const workspacePath = useWorkspace((s) => s.workspacePath)
+  const pickAndSetWorkspace = useWorkspace((s) => s.pickAndSetWorkspace)
 
   useEffect(() => {
     addTab({ kind: 'terminal', label: 'Terminal 1' })
     getHomeDir().then(setHomeDir).catch(() => setHomeDir('/'))
-    loadAllApiKeys()
+    loadTerminalApps()
   }, [])
 
   useEffect(() => {
@@ -84,6 +88,11 @@ function AppContent() {
       },
     }))
 
+    unregisters.push(registerShortcut({
+      key: 'o', meta: true, shift: true, description: 'Open folder',
+      handler: () => pickAndSetWorkspace(),
+    }))
+
     const handler = (e: KeyboardEvent) => {
       const binding = matchBinding(e)
       if (binding) {
@@ -125,10 +134,10 @@ function AppContent() {
       />
       <TabBar />
       <div className="flex flex-1 overflow-hidden">
-        {showExplorer && homeDir && (
+        {showExplorer && (
           <div className="w-56 flex-shrink-0">
             <Suspense fallback={<div className="w-56 flex-shrink-0" />}>
-              <ExplorerPanel rootPath={homeDir} onFileSelect={handleFileSelect} />
+              <ExplorerPanel onFileSelect={handleFileSelect} />
             </Suspense>
           </div>
         )}
@@ -164,7 +173,7 @@ function AppContent() {
               )}
               {tab.kind === 'git' && (
                 <Suspense fallback={<div />}>
-                  <GitPanel repoPath={tab.cwd || homeDir} />
+                  <GitPanel repoPath={tab.cwd || workspacePath || homeDir} />
                 </Suspense>
               )}
               {tab.kind === 'settings' && (

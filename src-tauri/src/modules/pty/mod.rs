@@ -70,42 +70,31 @@ mod tests {
     }
 
     #[test]
-    fn test_scripts_dir_exists() {
-        let scripts_dir = PathBuf::from(SCRIPTS_DIR);
-        assert!(scripts_dir.exists(), "Scripts dir should exist");
-        assert!(scripts_dir.join("zshenv.zsh").exists());
-        assert!(scripts_dir.join("zshrc.zsh").exists());
-        assert!(scripts_dir.join("bashrc.bash").exists());
+    fn test_scripts_embedded() {
+        assert!(!ZSHENV_ZSH.is_empty(), "zshenv.zsh should be embedded");
+        assert!(!ZSHRC_ZSH.is_empty(), "zshrc.zsh should be embedded");
+        assert!(!BASHRC_BASH.is_empty(), "bashrc.bash should be embedded");
     }
 }
 
-const SCRIPTS_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/src/modules/pty/scripts");
+const ZSHENV_ZSH: &str = include_str!("scripts/zshenv.zsh");
+const ZSHRC_ZSH: &str = include_str!("scripts/zshrc.zsh");
+const BASHRC_BASH: &str = include_str!("scripts/bashrc.bash");
 
 fn prepare_zdotdir() -> PathBuf {
     let tmp = std::env::temp_dir().join("flame-ade-zdotdir");
     let _ = fs::create_dir_all(&tmp);
 
-    // Copy script files from source to temp dir if not already there
-    let src = PathBuf::from(SCRIPTS_DIR);
-    for entry in ["zshenv.zsh", "zshrc.zsh", "bashrc.bash"] {
-        let dst = tmp.join(entry);
-        let src_file = src.join(entry);
-        if src_file.exists()
-            && (!dst.exists()
-                || dst.metadata().ok().and_then(|m| m.modified().ok())
-                    < src_file.metadata().ok().and_then(|m| m.modified().ok()))
-        {
-            let _ = fs::copy(&src_file, &dst);
-        }
-    }
+    let write_script = |name: &str, content: &str| {
+        let path = tmp.join(name);
+        let _ = fs::write(&path, content);
+    };
 
-    // Create/update .zshenv
-    let zshenv_link = tmp.join(".zshenv");
-    let _ = fs::copy(tmp.join("zshenv.zsh"), &zshenv_link);
-
-    // Create/update .zshrc
-    let zshrc_link = tmp.join(".zshrc");
-    let _ = fs::copy(tmp.join("zshrc.zsh"), &zshrc_link);
+    write_script("zshenv.zsh", ZSHENV_ZSH);
+    write_script("zshrc.zsh", ZSHRC_ZSH);
+    write_script("bashrc.bash", BASHRC_BASH);
+    write_script(".zshenv", ZSHENV_ZSH);
+    write_script(".zshrc", ZSHRC_ZSH);
 
     tmp
 }

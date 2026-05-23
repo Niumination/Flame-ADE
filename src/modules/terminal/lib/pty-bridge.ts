@@ -16,20 +16,41 @@ const dataCallbacks = new Map<string, (data: string) => void>()
 const exitCallbacks = new Map<string, (exitCode?: number) => void>()
 
 let listenersReady: Promise<void> | null = null
+let listenerFailCount = 0
+const MAX_LISTENER_RETRIES = 3
 
-function ensureListeners(): Promise<void> {
-  if (listenersReady) return listenersReady
-  listenersReady = Promise.all([
-    listen('pty-data', (event: any) => {
-      const payload = event.payload as { session_id: string; data: string }
-      dataCallbacks.get(payload.session_id)?.(payload.data)
-    }),
-    listen('pty-exit', (event: any) => {
-      const payload = event.payload as { session_id: string; exit_code?: number }
-      exitCallbacks.get(payload.session_id)?.(payload.exit_code)
-    }),
-  ]).then(() => {}) as Promise<void>
-  return listenersReady
+async function ensureListeners(): Promise<void> {
+  if (listenersReady) {
+    try {
+      await listenersReady
+      return
+    } catch {
+      // previous attempt failed, will retry below
+    }
+  }
+  listenersReady = (async () => {
+    await Promise.all([
+      listen('pty-data', (event: any) => {
+        const payload = event.payload as { session_id: string; data: string }
+        dataCallbacks.get(payload.session_id)?.(payload.data)
+      }),
+      listen('pty-exit', (event: any) => {
+        const payload = event.payload as { session_id: string; exit_code?: number }
+        exitCallbacks.get(payload.session_id)?.(payload.exit_code)
+      }),
+    ])
+  })()
+  try {
+    await listenersReady
+    listenerFailCount = 0
+  } catch (err) {
+    listenerFailCount++
+    listenersReady = null
+    if (listenerFailCount <= MAX_LISTENER_RETRIES) {
+      return ensureListeners()
+    }
+    throw err
+  }
 }
 
 export function usePtyBridge(): PtyBridge {
@@ -38,7 +59,7 @@ export function usePtyBridge(): PtyBridge {
   const exitCbRef = useRef<((exitCode?: number) => void) | null>(null)
 
   useEffect(() => {
-    ensureListeners()
+    ensureListeners().catch(() => {})
     return () => {
       if (sessionIdRef.current) {
         dataCallbacks.delete(sessionIdRef.current)

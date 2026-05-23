@@ -11,6 +11,7 @@ export interface TerminalSession {
   terminal: Terminal
   sessionId: string | null
   isReady: boolean
+  error: string | null
 }
 
 export function useTerminalSession(
@@ -23,6 +24,7 @@ export function useTerminalSession(
   const fitAddonRef = useRef<FitAddon | null>(null)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [isReady, setIsReady] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const bridge = usePtyBridge()
 
   useEffect(() => {
@@ -74,12 +76,16 @@ export function useTerminalSession(
     })
 
     const init = async () => {
-      const rect = containerRef.current?.getBoundingClientRect()
-      const cols = Math.floor((rect?.width || 800) / 8)
-      const rows = Math.floor((rect?.height || 600) / 16)
-      const id = await bridge.create(cols, rows, cwd)
-      setSessionId(id)
-      setIsReady(true)
+      try {
+        const rect = containerRef.current?.getBoundingClientRect()
+        const cols = Math.floor((rect?.width || 800) / 8)
+        const rows = Math.floor((rect?.height || 600) / 16)
+        const id = await bridge.create(cols, rows, cwd)
+        setSessionId(id)
+        setIsReady(true)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err))
+      }
     }
 
     init()
@@ -104,5 +110,5 @@ export function useTerminalSession(
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  return { terminal: terminalRef.current!, sessionId, isReady }
+  return { terminal: terminalRef.current!, sessionId, isReady, error }
 }
