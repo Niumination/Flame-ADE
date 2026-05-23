@@ -60,6 +60,9 @@ All 7 tasks done. Terminal works with multi-tab, PTY backend, shell integration.
 - pnpm tauri dev verified ✅
 - Zero Rust warnings, zero TS errors ✅
 - Engon verification skill created ✅
+- Rust test coverage: 67 tests (50 unit + 17 integration) ✅
+- TypeScript test coverage: 52 tests (5 files) ✅
+- CI/CD workflows: CI (push/PR) + Release (tag v*) ✅
 
 ## Architecture
 

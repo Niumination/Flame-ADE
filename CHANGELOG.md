@@ -204,6 +204,12 @@ All notable changes to Flame ADE.
 - CONTRIBUTING.md expanded — branching strategy, code standards per language, testing guidelines, security considerations, project structure reference
 - LICENSE file added (Apache-2.0 full text)
 
+### TypeScript Test Expansion 🧪 (52 tests — 5 test files)
+- **cn() utility** (6 tests) — class merging, falsy filtering, edge cases
+- **useTabs store** (20 tests) — add, remove, setActive, update, move, duplicate, closeOther, closeTabsToRight, icons, edge cases
+- **TabBar component** (12 tests) — rendering, tab click, add/remove, context menu (duplicate, close other, close all, close), outside click dismiss
+- **ThemeProvider + useTheme** (12 tests) — dark default, theme switch, isDark detection, invalid theme, CSS variables, themes object validation
+
 ## [0.1.0] — Prototype
 
 ### Added

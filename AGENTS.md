@@ -118,6 +118,9 @@ flame-ade/
 - [x] `pnpm tauri build` — compiles successfully (full release build takes ~5m)
 - [x] Zero Rust warnings, zero TypeScript errors
 - [x] Engon verification skill created
+- [x] Rust test coverage: 67 tests (50 unit + 17 integration) ✅
+- [x] TypeScript test coverage: 52 tests (5 files) ✅
+- [x] CI/CD workflows: CI (push/PR) + Release (tag v*) ✅
 
 ## Key Decisions
 1. **macOS Tahoe first** — test and optimize for macOS 26.5 before other platforms
