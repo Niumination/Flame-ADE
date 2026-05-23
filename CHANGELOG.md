@@ -181,6 +181,19 @@ All notable changes to Flame ADE.
   - Rust compilation (debug) in ~14s ✅
   - App binary launches without errors ✅
 
+### CI/CD Pipeline 🚀
+- `.github/workflows/ci.yml` — CI workflow on push/PR:
+  - TypeScript type check (`tsc --noEmit`)
+  - Vitest test runner (`pnpm test`)
+  - Rust cargo check + clippy (0 warnings enforced)
+  - Rust cargo test (6/6 integration tests)
+  - Tauri build (macOS + Linux x86_64)
+- `.github/workflows/release.yml` — Release workflow on tag push `v*`:
+  - Build matrix: macOS x86_64 + Linux x86_64
+  - Minisign signing of all bundle artifacts
+  - Upload artifacts + GitHub Release (draft, auto-generated notes from CHANGELOG)
+- PNPM lockfile verified (151KB, 52 packages)
+
 ## [0.1.0] — Prototype
 
 ### Added
