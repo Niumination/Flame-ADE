@@ -24,6 +24,7 @@ interface ChatStore {
   provider: AiProviderId
   model: string
   apiKeys: Partial<Record<AiProviderId, string>>
+  isStreaming: boolean
   createSession: (provider?: AiProviderId, model?: string) => string
   deleteSession: (id: string) => void
   setActiveSession: (id: string | null) => void
@@ -33,6 +34,7 @@ interface ChatStore {
   setModel: (model: string) => void
   clearMessages: (sessionId: string) => void
   updateLastMessage: (sessionId: string, content: string) => void
+  setStreaming: (streaming: boolean) => void
 }
 
 let sessionCounter = 0
@@ -43,6 +45,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   provider: 'opencode-zen',
   model: 'claude-sonnet-4-5',
   apiKeys: {},
+  isStreaming: false,
 
   createSession: (provider?: AiProviderId, model?: string) => {
     sessionCounter++
@@ -124,4 +127,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       ),
     }))
   },
+
+  setStreaming: (streaming) => set({ isStreaming: streaming }),
 }))

@@ -2,17 +2,19 @@ import { invoke } from '@tauri-apps/api/core'
 import { useChatStore } from '../store/chatStore'
 import type { AiProviderId } from './config'
 
-const KEYRING_PREFIX = 'flame-ade:api-key:'
+const SERVICE = 'flame-ade'
+
+function accountFor(provider: AiProviderId): string {
+  return `api-key:${provider}`
+}
 
 export async function loadApiKey(provider: AiProviderId): Promise<string | null> {
   try {
-    const result = await invoke<{ key: string; exists: boolean }>('secrets_get', {
-      key: `${KEYRING_PREFIX}${provider}`,
+    const result = await invoke<string | null>('secrets_get', {
+      service: SERVICE,
+      account: accountFor(provider),
     })
-    if (result.exists) {
-      return result.key
-    }
-    return null
+    return result
   } catch {
     return null
   }
@@ -21,8 +23,9 @@ export async function loadApiKey(provider: AiProviderId): Promise<string | null>
 export async function saveApiKey(provider: AiProviderId, key: string): Promise<void> {
   try {
     await invoke('secrets_set', {
-      key: `${KEYRING_PREFIX}${provider}`,
-      value: key,
+      service: SERVICE,
+      account: accountFor(provider),
+      password: key,
     })
     useChatStore.getState().setApiKey(provider, key)
   } catch (e) {
@@ -33,7 +36,8 @@ export async function saveApiKey(provider: AiProviderId, key: string): Promise<v
 export async function deleteApiKey(provider: AiProviderId): Promise<void> {
   try {
     await invoke('secrets_delete', {
-      key: `${KEYRING_PREFIX}${provider}`,
+      service: SERVICE,
+      account: accountFor(provider),
     })
     useChatStore.getState().setApiKey(provider, '')
   } catch (e) {

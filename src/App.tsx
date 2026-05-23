@@ -9,6 +9,8 @@ import { ThemeProvider } from './modules/theme'
 import { useTerminalPrefs } from './modules/terminal/lib/useTerminalPrefs'
 import { useWorkspace } from './modules/explorer/lib/useWorkspace'
 import { registerShortcut, matchBinding } from './modules/shortcuts'
+import { SidebarRail, type SidebarViewId } from './modules/sidebar'
+import { useSourceControl, SourceControlPanel } from './modules/source-control'
 
 const AiPanel = lazy(() => import('./modules/ai').then(m => ({ default: m.AiPanel })))
 const AiDiffPanel = lazy(() => import('./modules/ai').then(m => ({ default: m.AiDiffPanel })))
@@ -16,19 +18,23 @@ const ExplorerPanel = lazy(() => import('./modules/explorer').then(m => ({ defau
 const GitPanel = lazy(() => import('./modules/git').then(m => ({ default: m.GitPanel })))
 const PreviewPanel = lazy(() => import('./modules/preview').then(m => ({ default: m.PreviewPanel })))
 const SettingsPanel = lazy(() => import('./modules/settings').then(m => ({ default: m.SettingsPanel })))
+const MarkdownPreviewPane = lazy(() => import('./modules/markdown').then(m => ({ default: m.MarkdownPreviewPane })))
+const GitHistoryStack = lazy(() => import('./modules/git-history').then(m => ({ default: m.GitHistoryStack })))
 
 function AppContent() {
   const tabs = useTabs((s) => s.tabs)
   const activeTabId = useTabs((s) => s.activeTabId)
   const addTab = useTabs((s) => s.addTab)
   const [homeDir, setHomeDir] = useState('')
-  const [showExplorer, setShowExplorer] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarView, setSidebarView] = useState<SidebarViewId>('explorer')
   const [showAi, setShowAi] = useState(false)
   const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({})
   const fileContents = useRef<Map<string, string>>(new Map())
   const loadTerminalApps = useTerminalPrefs((s) => s.loadApps)
   const workspacePath = useWorkspace((s) => s.workspacePath)
   const pickAndSetWorkspace = useWorkspace((s) => s.pickAndSetWorkspace)
+  const scm = useSourceControl(workspacePath || homeDir)
 
   useEffect(() => {
     addTab({ kind: 'terminal', label: 'Terminal 1' })
@@ -45,8 +51,8 @@ function AppContent() {
     }))
 
     unregisters.push(registerShortcut({
-      key: 'e', meta: true, description: 'Toggle explorer',
-      handler: () => setShowExplorer((p) => !p),
+      key: 'e', meta: true, description: 'Toggle sidebar',
+      handler: () => setSidebarOpen((p) => !p),
     }))
 
     unregisters.push(registerShortcut({
@@ -127,18 +133,38 @@ function AppContent() {
   return (
     <main className="flex h-screen w-screen flex-col bg-background text-foreground">
       <Header
-        showExplorer={showExplorer}
-        onToggleExplorer={() => setShowExplorer((p) => !p)}
+        showExplorer={sidebarOpen}
+        onToggleExplorer={() => setSidebarOpen((p) => !p)}
         showAi={showAi}
         onToggleAi={() => setShowAi((p) => !p)}
       />
       <TabBar />
       <div className="flex flex-1 overflow-hidden">
-        {showExplorer && (
-          <div className="w-56 flex-shrink-0">
-            <Suspense fallback={<div className="w-56 flex-shrink-0" />}>
-              <ExplorerPanel onFileSelect={handleFileSelect} />
-            </Suspense>
+        {sidebarOpen && (
+          <div className="flex w-56 flex-shrink-0 flex-col border-r border-border">
+            <div className="min-h-0 flex-1 overflow-hidden">
+              {sidebarView === 'explorer' ? (
+                <ExplorerPanel onFileSelect={handleFileSelect} />
+              ) : (
+                <SourceControlPanel
+                  open={true}
+                  sourceControl={scm}
+                  onOpenDiff={(input) => handleFileSelect(input.path)}
+                  onOpenGitGraph={() => {
+                    addTab({
+                      kind: 'git-history',
+                      label: 'Git History',
+                      cwd: workspacePath || homeDir,
+                    })
+                  }}
+                />
+              )}
+            </div>
+            <SidebarRail
+              activeView={sidebarView}
+              onSelectView={setSidebarView}
+              changedCount={scm.changedCount}
+            />
           </div>
         )}
         <div className="flex-1 overflow-hidden relative">
@@ -176,6 +202,19 @@ function AppContent() {
                   <GitPanel repoPath={tab.cwd || workspacePath || homeDir} />
                 </Suspense>
               )}
+              {tab.kind === 'git-history' && (
+                <Suspense fallback={<div />}>
+                  <GitHistoryStack
+                    repoRoot={tab.cwd || workspacePath || homeDir}
+                    onOpenCommitFile={(input) => handleFileSelect(input.path)}
+                  />
+                </Suspense>
+              )}
+              {tab.kind === 'markdown' && (
+                <Suspense fallback={<div />}>
+                  <MarkdownPreviewPane path={(tab as any).path || ''} visible={tab.id === activeTabId} />
+                </Suspense>
+              )}
               {tab.kind === 'settings' && (
                 <Suspense fallback={<div />}>
                   <SettingsPanel />
@@ -185,7 +224,7 @@ function AppContent() {
           ))}
           {tabs.length === 0 && (
             <div className="flex h-full items-center justify-center text-muted-foreground">
-              <span className="text-sm">No tabs open. Click + to create one.</span>
+              <span className="text-sm">Tidak ada tab. Klik + untuk membuat.</span>
             </div>
           )}
         </div>

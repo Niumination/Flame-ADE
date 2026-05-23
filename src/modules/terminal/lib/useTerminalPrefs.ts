@@ -1,38 +1,35 @@
 import { create } from 'zustand'
-import { useEffect } from 'react'
-import { terminalListApps } from './terminal-bridge'
-import type { TerminalApp } from './terminal-bridge'
+
+interface TerminalApp {
+  id: string
+  name: string
+  path: string
+}
 
 interface TerminalPrefsState {
+  fontSize: number
+  setFontSize: (size: number) => void
+  cursorStyle: 'block' | 'underline' | 'bar'
+  setCursorStyle: (style: 'block' | 'underline' | 'bar') => void
+  cursorBlink: boolean
+  setCursorBlink: (blink: boolean) => void
   availableApps: TerminalApp[]
-  selectedAppId: string
+  selectedAppId: string | null
   setSelectedApp: (id: string) => void
   loadApps: () => Promise<void>
 }
 
 export const useTerminalPrefs = create<TerminalPrefsState>((set) => ({
+  fontSize: 14,
+  setFontSize: (fontSize) => set({ fontSize }),
+  cursorStyle: 'block',
+  setCursorStyle: (cursorStyle) => set({ cursorStyle }),
+  cursorBlink: true,
+  setCursorBlink: (cursorBlink) => set({ cursorBlink }),
   availableApps: [],
-  selectedAppId: '',
-  setSelectedApp: (id) => {
-    set({ selectedAppId: id })
-    localStorage.setItem('flame-ade:terminal-app', id)
-  },
+  selectedAppId: null,
+  setSelectedApp: (id) => set({ selectedAppId: id }),
   loadApps: async () => {
-    try {
-      const apps = await terminalListApps()
-      const saved = localStorage.getItem('flame-ade:terminal-app')
-      const defaultId = saved && apps.find((a) => a.id === saved) ? saved : apps[0]?.id || ''
-      set({ availableApps: apps, selectedAppId: defaultId })
-    } catch {
-      set({ availableApps: [], selectedAppId: '' })
-    }
+    set({ availableApps: [], selectedAppId: null })
   },
 }))
-
-export function useTerminalPrefsLoader() {
-  const loadApps = useTerminalPrefs((s) => s.loadApps)
-
-  useEffect(() => {
-    loadApps()
-  }, [])
-}

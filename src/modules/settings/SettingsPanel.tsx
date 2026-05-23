@@ -1,22 +1,30 @@
 import { useState, useEffect } from 'react'
-import { useTheme, themes } from '../theme'
+import { cn } from '@/lib/utils'
+import { useTheme, listBuiltinThemes } from '../theme'
 import { useChatStore } from '../ai/store/chatStore'
 import { AI_PROVIDERS, getProvider } from '../ai/lib/config'
 import { saveApiKey, loadAllApiKeys } from '../ai/lib/keychain'
 import { getBindings } from '../shortcuts'
 import { useTerminalPrefs } from '../terminal/lib/useTerminalPrefs'
+import { isEnabled, enable, disable } from '@tauri-apps/plugin-autostart'
 import type { AiProviderId } from '../ai/lib/config'
 
 const FONT_SIZES = [12, 13, 14, 15, 16, 18, 20]
 
 export function SettingsPanel() {
-  const { theme, setTheme } = useTheme()
+  const themeList = listBuiltinThemes()
+  const { themeId, setThemeId } = useTheme()
   const { provider, model, apiKeys, setProvider, setModel } = useChatStore()
   const [apiKeyInput, setApiKeyInput] = useState('')
   const [keysLoaded, setKeysLoaded] = useState(false)
   const [fontSize, setFontSize] = useState(() => {
     return parseInt(localStorage.getItem('flame-ade:font-size') || '14', 10)
   })
+  const [autoStart, setAutoStart] = useState(false)
+
+  useEffect(() => {
+    isEnabled().then(setAutoStart).catch(() => setAutoStart(false))
+  }, [])
   const availableApps = useTerminalPrefs((s) => s.availableApps)
   const selectedAppId = useTerminalPrefs((s) => s.selectedAppId)
   const setSelectedApp = useTerminalPrefs((s) => s.setSelectedApp)
@@ -42,7 +50,7 @@ export function SettingsPanel() {
           <div className="flex flex-col gap-1">
             <label className="text-[10px] text-muted-foreground">Default Terminal App</label>
             <select
-              value={selectedAppId}
+              value={selectedAppId ?? ''}
               onChange={(e) => setSelectedApp(e.target.value)}
               className="bg-muted text-foreground text-xs rounded px-2 py-1 border border-border"
             >
@@ -73,13 +81,13 @@ export function SettingsPanel() {
           <div className="flex flex-col gap-1">
             <label className="text-[10px] text-muted-foreground">Theme</label>
             <select
-              value={theme}
-              onChange={(e) => setTheme(e.target.value)}
+              value={themeId}
+              onChange={(e) => setThemeId(e.target.value)}
               className="bg-muted text-foreground text-xs rounded px-2 py-1 border border-border"
             >
-              {Object.keys(themes).map((t) => (
-                <option key={t} value={t}>
-                  {t.charAt(0).toUpperCase() + t.slice(1)}
+              {themeList.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
                 </option>
               ))}
             </select>
@@ -150,6 +158,35 @@ export function SettingsPanel() {
               </div>
             </div>
           )}
+        </section>
+
+        <section className="space-y-2">
+          <h3 className="text-xs font-medium text-foreground">System</h3>
+          <div className="flex items-center justify-between">
+            <label className="text-[10px] text-muted-foreground">Launch at login</label>
+            <button
+              onClick={async () => {
+                if (autoStart) {
+                  await disable()
+                  setAutoStart(false)
+                } else {
+                  await enable()
+                  setAutoStart(true)
+                }
+              }}
+              className={cn(
+                'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors',
+                autoStart ? 'bg-primary' : 'bg-muted',
+              )}
+            >
+              <span
+                className={cn(
+                  'pointer-events-none inline-block size-4 rounded-full bg-white shadow transition-transform',
+                  autoStart ? 'translate-x-4' : 'translate-x-0',
+                )}
+              />
+            </button>
+          </div>
         </section>
 
         <section className="space-y-2">

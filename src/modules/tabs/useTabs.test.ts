@@ -149,10 +149,10 @@ describe('useTabs store', () => {
 
   it('returns correct icons via getTabIcon', () => {
     const { getTabIcon } = useTabs.getState()
-    expect(getTabIcon('terminal')).toBe('>_')
-    expect(getTabIcon('editor')).toBe('</>')
+    expect(getTabIcon('terminal')).toBe('⬛')
+    expect(getTabIcon('editor')).toBe('📝')
     expect(getTabIcon('preview')).toBe('🌐')
-    expect(getTabIcon('ai-diff')).toBe('✨')
+    expect(getTabIcon('ai-diff')).toBe('📊')
     expect(getTabIcon('git')).toBe('⎇')
   })
 

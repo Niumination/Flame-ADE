@@ -1,4 +1,6 @@
 import { create } from 'zustand'
+import { createProviderInstance } from './provider'
+import type { AiProviderId } from './config'
 import { getTools } from '../tools/tools'
 
 export interface PendingApproval {
@@ -36,6 +38,19 @@ export const useApprovalStore = create<ApprovalStore>((set) => ({
     })
   },
 }))
+
+export type ProviderKeys = Partial<Record<AiProviderId, string>>
+
+export async function buildLanguageModel(
+  providerId: AiProviderId,
+  keys: ProviderKeys,
+  modelId: string,
+  _opts?: { lmstudioBaseURL?: string },
+): Promise<any> {
+  const apiKey = keys[providerId] || ''
+  const provider = createProviderInstance(providerId, apiKey)
+  return provider(modelId)
+}
 
 export function createToolExecutor(onApprovalNeeded: (tool: string, args: Record<string, unknown>) => Promise<boolean>) {
   const tools = getTools()

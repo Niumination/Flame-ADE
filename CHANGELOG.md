@@ -2,6 +2,97 @@
 
 All notable changes to Flame ADE.
 
+## [1.2.0] — 2026-05-24
+
+### Visual Polish & Fixes 🎨
+- **Fix: `App.css` not imported** — Tailwind v4 `@theme` was never loaded, causing all styling to be unstyled HTML (white background, left-aligned text, no layout).
+- **Fix: Dynamic theming broken for shadcn/ui** — `applyTheme.ts` set CSS vars as `--{name}` format, but Tailwind v4 utility classes resolve to `--color-{name}` format. Now sets **dual** formats (`--color-background` + `--background`) so both Tailwind v4 components and CodeMirror/extensions respond to theme switches.
+- **Improved default `@theme` colors** — Replaced flat `#0a0a0a` with refined palette: indigo primary (`#6366f1`), depth hierarchy (bg `#0c0c0d` → card `#141416` → popover `#1a1a1e`), semi-transparent borders (`rgba(255,255,255,0.06)`), sidebar tokens.
+- **Added missing `@theme` tokens** — `--color-input` (shadcn/ui input fields), `--color-sidebar*` (sidebar rail), `--radius` base.
+
+### Features ✨
+- **Auto-start toggle** — Settings → System → "Launch at login" toggle using `@tauri-apps/plugin-autostart`. All Rust backend infra was already wired (plugin, permissions, capabilities), only frontend UI was missing.
+- **AgentStatusPill streaming indicator** — `isStreaming` state added to `chatStore`, set by `agent-runner.ts` at stream start/end in `try/finally`. `AgentStatusPill` reads from store instead of hardcoded `false`.
+
+### Verification ✅
+- `cargo check` — 0 warnings
+- `cargo test` — 85/85 passing
+- `cargo clippy` — 0 warnings
+- `tsc --noEmit` — 0 errors
+- `pnpm test` — 50/50 passing
+
+## [1.1.0] — 2026-05-23
+
+### Phase 4 — Core Modules Port ✅
+New modules ported from Terax AI, completing Phase 4:
+
+- **`theme/`** (11 themes) — Tokyo Night, Nord, GitHub, Atom One, Aura, Copilot, Xcode edisi dark, Dracula, Catppuccin Mocha, One Dark, Light. Background images support, custom themes via ThemeBuilder.
+- **`sidebar/`** — `SidebarRail` component with 6 `SidebarViewId` values (explorer, source-control, git-history, extensions, remote, settings). Collapsible rail UI.
+- **`source-control/`** — `SourceControlPanel` (1067 lines) + `useSourceControl` + `useSourceControlPanel` hooks. Virtualized file list, staging checkboxes, commit message, diff navigation, upstream badge, alert dialogs.
+- **`git-history/`** — `GitHistoryPane`, `GitHistoryStack`, `GraphRail` with lane-based commit graph rendering, branch indicators, Web URL resolution.
+- **`markdown/`** — `MarkdownPreviewPane` with Streamdown rendering + `MarkdownStack`. Reads file content via `fs_read_file` invoke.
+- **`updater/`** — `UpdaterBanner` with check/update/restart flow + Zustand updater store.
+- **`workspace/`** — `useWorkspacePanel` + `useWorkspace` for workspace environment management.
+- **Editor upgrade** — `AiDiff` inline diff, `GitDiffManager` for git diff decorations, autocomplete extensions, `EditorStack` with tab management.
+- **Explorer upgrade** — `FileTree` with dynamic icons, `SearchOverlay`, inline rename, context menu actions.
+- **Header upgrade** — `InlineSearch` overlay, `Breadcrumb` navigation, polished toggle buttons.
+- **Statusbar upgrade** — `CwdBreadcrumb`, `BranchIndicator`, AI status controls.
+- **Tabs upgrade** — `TabContextMenu` (duplicate/close others/close right), `TabDnd` drag-and-drop, `TerminalTabIndicator`.
+- **Preview upgrade** — `DevServerDetector` auto-detection of dev servers, improved URL handling.
+
+### Phase 5 — AI Subsystem Port ✅
+Full AI subsystem ported from Terax AI, completing Phase 5:
+
+- **Providers** — All 12+: OpenAI, Anthropic, Google, Groq, xAI, Cerebras, OpenRouter, DeepSeek, Mistral, OpenAI-compatible, LM Studio, MLX, Ollama, OpenCode Zen (dual: free + paid).
+- **Inline AI autocomplete** — `useInlineCompletion` hook for CodeMirror 6 with debounced completion requests.
+- **Custom agents + sub-agents** — Registry with named sub-agents (architect, rust-dev, frontend-dev, etc.), plan mode.
+- **Bottom-docked AiInputBar** — Persistent input bar across the bottom with send/stop/voice buttons.
+- **OpenCode Zen dual config** — Free tier models (Big Pickle, Claude Haiku, GPT-4.1 Mini) + paid tier (Claude Sonnet 4-5, GPT-5.x).
+- **24 tools total** — 14 file tools (read, write, list, search, grep, create_dir, rename, delete, context, edit, rewrite, insert, patch, diff), 6 shell tools (run_command, session, bg_spawn, bg_kill, bg_list, terminal), 4 AI tools (subagent, think, todo, message).
+- **Zustand stores** — `chatStore` (sessions, messages, streaming), `approvalStore` (tool approval queue), `agentsStore` (agent config), `agentStateMachine`.
+- **Components** — `AiPanel`, `AiChat`, `AiInputBar`, `ApprovalDialog`, `AgentStatusPill`, `AgentSwitcher`, `AiStatusBarControls` (+ `AiOpenButton`), `AiMiniWindow`, `AiDiffPanel`, `VoiceInput`.
+
+### Phase 6 — Integration & Polish ✅
+- **App.tsx** — Full integration wiring all modules: terminal, editor, explorer with sidebar rail (explorer/source-control toggle), preview, markdown, settings, git tabs + AiPanel side panel.
+- **Design skills removed** (P7) — All `/design`, `ui-design`, `design-systems`, `visual-critique` references cleaned from codebase per patch policy.
+- **UI components** — `ai-elements/` (markdown-code with syntax highlighting, EditDiff/UnifiedDiff/SquiggleUnderline), 20+ shadcn/ui primitives (button, input, dialog, checkbox, textarea, select, tooltip, alert-dialog, spinner, etc.)
+- **WindowControls** — macOS traffic lights overlay component with hover/click states.
+- **PTY module split** — Monolithic `pty/mod.rs` → 4 files: `mod.rs` (re-exports), `session.rs` (structs + tests), `shell_init.rs` (init scripts), `commands.rs` (Tauri commands). Following the same modular pattern as `fs/` and `shell/`.
+
+### Verification ✅
+- `cargo check` — 0 warnings
+- `cargo test` — 85/85 passing (68 unit + 17 integration)
+- `tsc --noEmit` — 0 errors
+- `pnpm test` — 50/50 passing
+
+## [1.0.0] — 2026-05-23
+
+### Phase 3 — Frontend Infrastructure ✅ (Added post-release)
+- **`src/lib/fonts.ts`** — Nerd Font detection with 15 font candidates + fallback chain
+- **`src/lib/platform.ts`** — Platform detection (`IS_MAC`, `IS_LINUX`, `IS_WINDOWS`), modifier key constants
+- **`src/lib/launchDir.ts`** — `initLaunchDir()`/`getLaunchDir()` via Rust `get_launch_dir` command
+- **`src/main.tsx`** — Window-show pattern (hidden → React render → show at 50/500ms), font imports, `initLaunchDir()` at startup
+- **`src/styles/globals.css`** — Scrollbar styling, zoom support (`--app-zoom`), base resets
+- **Rust backend** — Added `get_launch_dir` command, `init_launch_cwd()` in setup
+- **Deferred**: `src/app/App.tsx`, `src/components/`, `src/settings/` (Phase 6)
+
+### Phase 2 — Rust Backend Port ✅ (Added post-release)
+- **New modules**: `net.rs` (SSRF-safe HTTP with DNS rebinding protection), `proc.rs` (process utilities), `workspace.rs` (workspace authorization & registry)
+- **Upgraded `secrets.rs`** — single file format with Linux file-based fallback (mode 0600), `secrets_get_all` batch API
+- **Split `fs/`** — monolithic `mod.rs` → 5 files: `tree.rs`, `file.rs`, `mutate.rs`, `search.rs`, `grep.rs`
+- **Upgraded `shell/`** — split into `session.rs`, `background.rs`, `ringbuffer.rs`; uses `SharedChild` for safe concurrent access; workspace auth support
+- **Upgraded `lib.rs`** — registered `WorkspaceRegistry`, `SecretsState`, 4 new commands (`ai_http_request`, `ai_http_stream`, `workspace_authorize`, `workspace_current_dir`, `secrets_get_all`)
+- **Result**: `cargo check` ✅, `cargo clippy` (0 warnings) ✅, `cargo test` 84/84 ✅, `tsc --noEmit` ✅, `pnpm test` 52/52 ✅
+
+### Phase 1 — Terminal Restoration ✅ (Added post-release)
+- **Removed** native terminal launcher (Rust `terminal` module, `terminal_list_apps`/`terminal_open` commands)
+- **Restored** xterm.js embedded terminal via `useTerminalSession.ts` + `TerminalStack.tsx`
+- **Created** `panes.ts` — PaneNode data structure for future multi-pane support
+- **Recreated** `useTerminalPrefs.ts` — zustand store for terminal preferences (no native app list)
+- **Cleaned** Rust backend — removed all native terminal references from `mod.rs` and `lib.rs`
+- **Fixed** `SettingsPanel.tsx` — TS error with `selectedAppId` null compatibility
+- **Result**: cargo check ✅, tsc --noEmit ✅, pnpm test 52/52 ✅
+
 ## [1.0.0] — 2026-05-23
 
 ### Production Release 🚀

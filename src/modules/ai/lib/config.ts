@@ -94,3 +94,16 @@ export const AI_PROVIDERS: AiProviderConfig[] = [
 export function getProvider(id: AiProviderId): AiProviderConfig {
   return AI_PROVIDERS.find((p) => p.id === id) || AI_PROVIDERS[AI_PROVIDERS.length - 1]
 }
+
+export type ModelId = string
+
+export const DEFAULT_MODEL_ID: ModelId = 'claude-sonnet-4-5'
+
+export function getModel(modelId: ModelId): { provider: AiProviderId; id: string } {
+  for (const provider of AI_PROVIDERS) {
+    if (provider.models.includes(modelId)) {
+      return { provider: provider.id, id: modelId }
+    }
+  }
+  return { provider: AI_PROVIDERS[0].id, id: modelId }
+}

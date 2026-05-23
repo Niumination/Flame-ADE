@@ -8,7 +8,7 @@ function resetStore() {
   useTabs.setState({ tabs: [], activeTabId: '' })
 }
 
-function addTab(kind: 'terminal' | 'editor' | 'preview' | 'ai-diff' | 'git', label: string) {
+function addTab(kind: 'terminal' | 'editor' | 'preview' | 'ai-diff' | 'git' | 'settings' | 'markdown', label: string) {
   return useTabs.getState().addTab({ kind, label })
 }
 
@@ -17,9 +17,9 @@ describe('TabBar', () => {
     resetStore()
   })
 
-  it('renders plus button when empty', () => {
+  it('renders add button when empty', () => {
     render(<TabBar />)
-    expect(screen.getByText('+')).toBeInTheDocument()
+    expect(screen.getByTestId('add-tab')).toBeInTheDocument()
   })
 
   it('renders tabs from store', () => {
@@ -35,23 +35,23 @@ describe('TabBar', () => {
     addTab('editor', 'E')
     addTab('git', 'G')
     render(<TabBar />)
-    expect(screen.getByText('>_')).toBeInTheDocument()
-    expect(screen.getByText('</>')).toBeInTheDocument()
+    expect(screen.getByText('⬛')).toBeInTheDocument()
+    expect(screen.getByText('📝')).toBeInTheDocument()
     expect(screen.getByText('⎇')).toBeInTheDocument()
   })
 
-  it('adds terminal tab on + click', () => {
+  it('adds terminal tab on add click', () => {
     render(<TabBar />)
-    fireEvent.click(screen.getByText('+'))
+    fireEvent.click(screen.getByTestId('add-tab'))
     const { tabs } = useTabs.getState()
     expect(tabs).toHaveLength(1)
     expect(tabs[0].kind).toBe('terminal')
   })
 
-  it('increments terminal label on + click', () => {
+  it('increments terminal label on add click', () => {
     addTab('terminal', 'Terminal 1')
     render(<TabBar />)
-    fireEvent.click(screen.getByText('+'))
+    fireEvent.click(screen.getByTestId('add-tab'))
     const { tabs } = useTabs.getState()
     expect(tabs).toHaveLength(2)
     expect(tabs[1].label).toBe('Terminal 2')
@@ -70,7 +70,7 @@ describe('TabBar', () => {
     addTab('terminal', 'T1')
     addTab('terminal', 'T2')
     render(<TabBar />)
-    const closeButtons = screen.getAllByText('×')
+    const closeButtons = screen.getAllByTestId('close-tab')
     fireEvent.click(closeButtons[0])
     expect(useTabs.getState().tabs).toHaveLength(1)
     expect(useTabs.getState().tabs[0].label).toBe('T2')
@@ -81,17 +81,17 @@ describe('TabBar', () => {
     render(<TabBar />)
     const tab = screen.getByText('T1')
     fireEvent.contextMenu(tab)
-    expect(screen.getByText('Duplicate')).toBeInTheDocument()
-    expect(screen.getByText('Close Others')).toBeInTheDocument()
-    expect(screen.getByText('Close to Right')).toBeInTheDocument()
-    expect(screen.getByText('Close')).toBeInTheDocument()
+    expect(screen.getByText('Duplikat')).toBeInTheDocument()
+    expect(screen.getByText('Tutup Lainnya')).toBeInTheDocument()
+    expect(screen.getByText('Tutup ke Kanan')).toBeInTheDocument()
+    expect(screen.getByText('Tutup')).toBeInTheDocument()
   })
 
   it('duplicates tab via context menu', () => {
     addTab('editor', 'My File')
     render(<TabBar />)
     fireEvent.contextMenu(screen.getByText('My File'))
-    fireEvent.click(screen.getByText('Duplicate'))
+    fireEvent.click(screen.getByText('Duplikat'))
     const { tabs } = useTabs.getState()
     expect(tabs).toHaveLength(2)
     expect(tabs[1].label).toBe('My File (copy)')
@@ -103,7 +103,7 @@ describe('TabBar', () => {
     addTab('terminal', 'Remove2')
     render(<TabBar />)
     fireEvent.contextMenu(screen.getByText('Keep'))
-    fireEvent.click(screen.getByText('Close Others'))
+    fireEvent.click(screen.getByText('Tutup Lainnya'))
     const { tabs } = useTabs.getState()
     expect(tabs).toHaveLength(1)
     expect(tabs[0].id).toBe(id)
@@ -114,7 +114,7 @@ describe('TabBar', () => {
     addTab('terminal', 'Remain')
     render(<TabBar />)
     fireEvent.contextMenu(screen.getByText('ToClose'))
-    fireEvent.click(screen.getByText('Close'))
+    fireEvent.click(screen.getByText('Tutup'))
     const { tabs } = useTabs.getState()
     expect(tabs).toHaveLength(1)
     expect(tabs[0].label).toBe('Remain')
@@ -124,8 +124,8 @@ describe('TabBar', () => {
     addTab('terminal', 'T1')
     render(<TabBar />)
     fireEvent.contextMenu(screen.getByText('T1'))
-    expect(screen.getByText('Duplicate')).toBeInTheDocument()
+    expect(screen.getByText('Duplikat')).toBeInTheDocument()
     fireEvent.mouseDown(document.body)
-    expect(screen.queryByText('Duplicate')).not.toBeInTheDocument()
+    expect(screen.queryByText('Duplikat')).not.toBeInTheDocument()
   })
 })

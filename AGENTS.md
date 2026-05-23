@@ -98,25 +98,60 @@ flame-ade/
 - [x] Full message streaming with Vercel AI SDK
 
 ### Phase 4 — Advanced Features ✅
-- [x] Web preview (PreviewPanel, iframe sandbox, URL input)
+- [x] Web preview (PreviewPanel, iframe sandbox, URL input, DevServerDetector)
 - [x] Git panel (Rust git commands, React GitPanel with changes/log/branches views)
 - [x] AI edit diffs (EditDiff component, side-by-side diff, per-hunk accept/reject)
 - [x] Skills & slash commands (/explain, /fix, /test, /refactor, /docs)
 - [x] Auto-updater (tauri-plugin-updater configured)
+- [x] **theme/** — 11 themes (Tokyo Night, Nord, GitHub, Atom One, Aura, Copilot, Xcode, Dracula, Catppuccin, One Dark, Light + bg images)
+- [x] **sidebar/** — SidebarRail with 6 SidebarViewId
+- [x] **source-control/** — SourceControlPanel (virtualized, staging, commit)
+- [x] **git-history/** — GitHistoryPane + GraphRail commit graph
+- [x] **markdown/** — MarkdownPreviewPane + MarkdownStack
+- [x] **updater/** — UpdaterBanner + updater store
+- [x] **workspace/** — useWorkspacePanel + useWorkspace
+- [x] **editor upgrade** — AiDiff, GitDiff, autocomplete, editor tabs
+- [x] **explorer upgrade** — FileTree, SearchOverlay, rename, icons
+- [x] **header upgrade** — InlineSearch, Breadcrumb
+- [x] **statusbar upgrade** — CwdBreadcrumb, BranchIndicator
+- [x] **tabs upgrade** — TabContextMenu, TabDnd, TerminalTabIndicator
+- [x] **preview upgrade** — DevServerDetector
+
+### Phase 3 — Frontend Infrastructure ✅
+- [x] `src/lib/fonts.ts` — Nerd Font detection (JetBrains Mono + fallback chain)
+- [x] `src/lib/platform.ts` — IS_MAC/IS_LINUX/IS_WINDOWS, MOD_KEY, custom window controls
+- [x] `src/lib/launchDir.ts` — `initLaunchDir()` + `getLaunchDir()` via Rust `get_launch_dir` command
+- [x] `src/main.tsx` — window-show pattern (hidden window → show after React render)
+- [x] `src/styles/globals.css` — scrollbar styling, zoom support, base resets
+- [x] Rust `get_launch_dir` command + `init_launch_cwd()` in setup
+
+### Phase 5 — AI Subsystem Port ✅
+- [x] All providers (OpenRouter, DeepSeek, Mistral, LM Studio, MLX, Ollama, + OpenCode Zen)
+- [x] Inline AI autocomplete (useInlineCompletion)
+- [x] Custom agents + sub-agents (registry + plan mode)
+- [x] Bottom-docked AiInputBar + AiChat + AiMiniWindow
+- [x] OpenCode Zen dual config (free + paid)
+- [x] 24 tools (14 file + 6 shell + 4 AI)
+- [x] Zustand stores (chatStore, approvalStore, agentsStore, agentStateMachine)
+- [x] Components (AiPanel, AiChat, AiInputBar, ApprovalDialog, AgentStatusPill, AgentSwitcher, AiStatusBarControls, AiMiniWindow, AiDiffPanel, VoiceInput)
 
 ### Phase 5 — Polish ✅
 - [x] Security hardening — path sanitization in Rust fs, frontend path validation, removed unnecessary capabilities, minisign signing keys
 - [x] Performance optimization — lazy-load heavy components (AiPanel, ExplorerPanel, GitPanel, PreviewPanel), React.memo TabBar + StatusBar
 - [x] Cross-platform testing — cargo check + tsc verify on macOS x86_64
 - [x] Documentation finalized — all docs synced with code, milestone checklist updated
-- [x] Release prep — version 0.6.0, CSP hardened, updater public key configured inline
+- [x] Release prep — version 1.0.0, CSP hardened, updater public key configured inline
 
-### Design Skills — Integrated from Owl-Listener/designer-skills 🎨
-- [x] `ui-design` — 14 sub-skills (color, typography, layout, responsive, visual hierarchy, dark mode, spacing, Gestalt principles) + 4 workflows
-- [x] `design-systems` — 11 sub-skills (tokens, components, accessibility, theming, motion, naming, localization) + 3 workflows
-- [x] `visual-critique` — 4 sub-skills (hierarchy, brand, composition, typography) + 1 critique-screen workflow
-- [x] Sub-agents: `@ui-designer`, `@design-system-engineer`, `@visual-critic` (read-only, free tier models)
-- [x] Command: `/design` — design workflow coordinator
+### Phase 5 Enhancement — Rust Backend Port ✅
+- [x] `net.rs` — SSRF-safe HTTP client with DNS rebinding protection (ai_http_request, ai_http_stream)
+- [x] `proc.rs` — process utilities (hide_console for Windows)
+- [x] `workspace.rs` — workspace authorization registry + commands
+- [x] `secrets.rs` — single file with Linux file-based fallback (mode 0600) + secrets_get_all
+- [x] `fs/` split — tree.rs, file.rs, mutate.rs, search.rs, grep.rs
+- [x] `shell/` upgrade — session.rs, background.rs, ringbuffer.rs, SharedChild-based
+- [x] `pty/` split — mod.rs, session.rs, shell_init.rs, commands.rs
+- [x] Zero Rust warnings, zero TypeScript errors
+- [x] 85 Rust tests + 50 TypeScript tests — all passing
 
 ### v0.6.1 — Critical Bugfixes 🔧
 - [x] Fix `secrets_get` — returns actual password value instead of key name
@@ -136,10 +171,27 @@ flame-ade/
 ### v1.0.0 — Production Release 🚀
 - [x] Version bump 0.6.1 → 1.0.0 across all config files
 - [x] Full 6-area Engon verification: Rust backend ✅, Frontend modules ✅, Compilation ✅, Tests ✅, Documentation ✅, Dev server ✅
-- [x] 52 TypeScript tests + 67 Rust tests — all passing
+- [x] 50 TypeScript tests + 67 Rust tests — all passing
 - [x] Zero Rust warnings (cargo clippy), zero TypeScript errors (tsc --noEmit)
 - [x] All documentation synced and accurate
 - [x] GitHub release v1.0.0 created with tag
+
+### v1.1.0 — AI Subsystem Port & Phase 4-6 Completion 🚀
+- [x] Phase 4 — All 13 modules ported (theme, sidebar, source-control, git-history, markdown, updater, workspace, editor/explorer/header/statusbar/tabs/preview upgrades)
+- [x] Phase 5 — Full AI subsystem port (all 12+ providers, 24 tools, agents, stores, components)
+- [x] Phase 6 — App.tsx full integration, UI components, WindowControls, design skills removed
+- [x] PTY split — mod.rs → session.rs + shell_init.rs + commands.rs
+- [x] 50 TypeScript tests + 85 Rust tests — all passing
+- [x] Zero Rust warnings (cargo check), zero TypeScript errors (tsc --noEmit)
+
+### v1.2.0 — Visual Polish & Auto-start 🎨
+- [x] Fix: `App.css` not imported — Tailwind v4 `@theme` was never loaded
+- [x] Fix: Dynamic theming broken — `applyTheme.ts` now sets dual CSS vars (`--color-{name}` + `--{name}`)
+- [x] Improved default `@theme` — refined palette with depth hierarchy, indigo primary, sidebar tokens
+- [x] Auto-start toggle — Settings → System → "Launch at login"
+- [x] AgentStatusPill streaming indicator — wired to chatStore `isStreaming`
+- [x] 50 TypeScript tests + 85 Rust tests — all passing
+- [x] Zero Rust warnings, zero TypeScript errors
 
 ## Key Decisions
 1. **macOS Tahoe first** — test and optimize for macOS 26.5 before other platforms

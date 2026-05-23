@@ -1,6 +1,11 @@
 import { create } from 'zustand'
 
-export type TabKind = 'terminal' | 'editor' | 'preview' | 'ai-diff' | 'git' | 'settings'
+export type TabKind = 'terminal' | 'editor' | 'preview' | 'ai-diff' | 'git' | 'settings' | 'markdown' | 'git-history'
+
+export interface MarkdownTab extends Tab {
+  kind: 'markdown'
+  path: string
+}
 
 export interface Tab {
   id: string
@@ -27,6 +32,17 @@ interface TabsState {
 
 let nextId = 1
 
+const TAB_ICONS: Record<TabKind, string> = {
+  terminal: '⬛',
+  editor: '📝',
+  preview: '🌐',
+  'ai-diff': '📊',
+  git: '⎇',
+  settings: '⚙',
+  markdown: '📄',
+  'git-history': '🌳',
+}
+
 export const useTabs = create<TabsState>((set, get) => ({
   tabs: [],
   activeTabId: '',
@@ -42,79 +58,63 @@ export const useTabs = create<TabsState>((set, get) => ({
     return id
   },
 
-  removeTab: (id) =>
+  removeTab: (id) => {
     set((state) => {
       const idx = state.tabs.findIndex((t) => t.id === id)
-      const newTabs = state.tabs.filter((t) => t.id !== id)
+      if (idx === -1) return state
+      const tabs = state.tabs.filter((t) => t.id !== id)
       let activeTabId = state.activeTabId
-      if (state.activeTabId === id) {
-        if (newTabs.length === 0) {
-          activeTabId = ''
-        } else {
-          const newIdx = Math.min(idx, newTabs.length - 1)
-          activeTabId = newTabs[newIdx].id
-        }
+      if (activeTabId === id) {
+        if (tabs.length === 0) activeTabId = ''
+        else if (idx >= tabs.length) activeTabId = tabs[tabs.length - 1].id
+        else activeTabId = tabs[idx].id
       }
-      return { tabs: newTabs, activeTabId }
-    }),
+      return { tabs, activeTabId }
+    })
+  },
 
   setActiveTab: (id) => set({ activeTabId: id }),
 
-  updateTab: (id, updates) =>
+  updateTab: (id, updates) => {
     set((state) => ({
       tabs: state.tabs.map((t) => (t.id === id ? { ...t, ...updates } : t)),
-    })),
+    }))
+  },
 
-  moveTab: (fromIndex, toIndex) =>
+  moveTab: (fromIndex, toIndex) => {
     set((state) => {
-      const newTabs = [...state.tabs]
-      const [moved] = newTabs.splice(fromIndex, 1)
-      newTabs.splice(toIndex, 0, moved)
-      return { tabs: newTabs }
-    }),
+      const tabs = [...state.tabs]
+      const [moved] = tabs.splice(fromIndex, 1)
+      tabs.splice(toIndex, 0, moved)
+      return { tabs }
+    })
+  },
 
   duplicateTab: (id) => {
     const tab = get().tabs.find((t) => t.id === id)
-    if (tab) {
-      get().addTab({
-        kind: tab.kind,
-        label: `${tab.label} (copy)`,
-        cwd: tab.cwd,
-      })
-    }
+    if (!tab) return
+    get().addTab({ kind: tab.kind, label: `${tab.label} (copy)`, cwd: tab.cwd })
   },
 
-  closeOtherTabs: (id) =>
-    set((state) => ({
-      tabs: state.tabs.filter((t) => t.id === id),
-      activeTabId: id,
-    })),
+  closeOtherTabs: (id) => {
+    set((state) => {
+      const tab = state.tabs.find((t) => t.id === id)
+      if (!tab) return state
+      return { tabs: [tab], activeTabId: id }
+    })
+  },
 
-  closeTabsToRight: (id) =>
+  closeTabsToRight: (id) => {
     set((state) => {
       const idx = state.tabs.findIndex((t) => t.id === id)
+      if (idx === -1) return state
+      const tabs = state.tabs.slice(0, idx + 1)
       return {
-        tabs: state.tabs.slice(0, idx + 1),
-        activeTabId: state.activeTabId === id ? id : state.activeTabId,
+        tabs,
+        activeTabId: state.tabs.find((t) => t.id === state.activeTabId) ? state.activeTabId : id,
       }
-    }),
-
-  getTabIcon: (kind) => {
-    switch (kind) {
-      case 'terminal':
-        return '>_'
-      case 'editor':
-        return '</>'
-      case 'preview':
-        return '🌐'
-      case 'ai-diff':
-        return '✨'
-      case 'git':
-        return '⎇'
-      case 'settings':
-        return '⚙'
-      default:
-        return '📄'
-    }
+    })
   },
+
+  getTabIcon: (kind) => TAB_ICONS[kind] || '⬜',
 }))

@@ -1,18 +1,17 @@
-import { useEffect, useRef } from 'react'
 import { EditorView, basicSetup } from 'codemirror'
 import { EditorState } from '@codemirror/state'
 import { keymap } from '@codemirror/view'
 import { indentWithTab } from '@codemirror/commands'
-import { getLanguageExtension, getTheme } from './lib/extensions'
+import { useEffect, useRef } from 'react'
+import { getLanguageExtension, buildSharedExtensions } from './lib/extensions'
 
 interface EditorStackProps {
   path: string
   initialContent?: string
-  theme?: string
   className?: string
 }
 
-export function EditorStack({ path, initialContent = '', theme = 'dark', className }: EditorStackProps) {
+export function EditorStack({ path, initialContent = '', className }: EditorStackProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
 
@@ -23,16 +22,9 @@ export function EditorStack({ path, initialContent = '', theme = 'dark', classNa
       basicSetup,
       keymap.of([indentWithTab]),
       getLanguageExtension(path),
-      EditorView.theme({
-        '&': { height: '100%' },
-        '.cm-scroller': { overflow: 'auto' },
-      }),
+      ...buildSharedExtensions(),
       EditorView.lineWrapping,
     ]
-
-    if (theme === 'dark') {
-      extensions.push(getTheme(theme))
-    }
 
     const state = EditorState.create({
       doc: initialContent,
@@ -50,7 +42,7 @@ export function EditorStack({ path, initialContent = '', theme = 'dark', classNa
       view.destroy()
       viewRef.current = null
     }
-  }, [path, theme])
+  }, [path])
 
   return (
     <div ref={containerRef} className={`h-full w-full overflow-hidden ${className || ''}`} />

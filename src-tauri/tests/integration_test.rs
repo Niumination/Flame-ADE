@@ -25,8 +25,7 @@ fn test_secrets_mod_exists() {
     let secrets_mod = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("src")
         .join("modules")
-        .join("secrets")
-        .join("mod.rs");
+        .join("secrets.rs");
     assert!(secrets_mod.exists(), "Secrets module should exist");
 }
 

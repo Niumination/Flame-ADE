@@ -1,4 +1,9 @@
 import { useTabs } from '../tabs'
+import { Button } from '@/components/ui/button'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { CodeIcon, GitBranchIcon, Settings01Icon, TerminalIcon } from '@hugeicons/core-free-icons'
+import { IS_MAC } from '@/lib/platform'
+import { AgentSwitcher } from '@/modules/ai'
 
 interface HeaderProps {
   showExplorer?: boolean
@@ -14,58 +19,77 @@ export function Header({ showExplorer, onToggleExplorer, showAi, onToggleAi }: H
   const activeTab = tabs.find((t) => t.id === activeTabId)
 
   return (
-    <header className="flex h-10 items-center gap-2 border-b border-border px-4" data-tauri-drag-region>
-      <div className="flex items-center gap-2">
+    <header
+      className={`flex h-10 items-center gap-2 border-b border-border/60 bg-card select-none ${IS_MAC ? 'pl-20 pr-2' : 'px-2'}`}
+      data-tauri-drag-region
+    >
+      <div className="flex items-center gap-1 shrink-0">
         {onToggleExplorer && (
-          <button
+          <Button variant="ghost" size="icon-sm"
             onClick={onToggleExplorer}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors px-1"
-            title={showExplorer ? 'Hide explorer' : 'Show explorer'}
+            className="shrink-0 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+            title={showExplorer ? 'Sembunyikan explorer' : 'Tampilkan explorer'}
           >
-            {showExplorer ? '📁' : '📂'}
-          </button>
+            <HugeiconsIcon icon={CodeIcon} size={16} strokeWidth={1.75} />
+          </Button>
         )}
         {onToggleAi && (
-          <button
+          <Button variant="ghost" size="icon-sm"
             onClick={onToggleAi}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors px-1"
-            title={showAi ? 'Hide AI' : 'Show AI'}
+            className="shrink-0 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+            title={showAi ? 'Sembunyikan AI' : 'Tampilkan AI'}
           >
-            {showAi ? '🤖' : '💬'}
-          </button>
+            <span className="text-sm">{showAi ? '🤖' : '💬'}</span>
+          </Button>
         )}
-        <span className="text-sm font-semibold text-foreground">Flame ADE</span>
+      </div>
+
+      <AgentSwitcher className="shrink-0" />
+
+      <span className="mx-1 h-5 w-px shrink-0 bg-border" />
+
+      <div className="flex min-w-0 flex-1 items-center gap-2" data-tauri-drag-region>
+        <span className="text-sm font-semibold text-foreground shrink-0">Flame ADE</span>
         {activeTab && (
           <>
             <span className="text-muted-foreground text-xs">/</span>
-            <span className="text-xs text-muted-foreground">{activeTab.label}</span>
+            <span className="text-xs text-muted-foreground truncate">{activeTab.label}</span>
           </>
         )}
+        <div data-tauri-drag-region className="h-full min-w-2 flex-1" />
       </div>
-      <div className="flex-1" />
-      <button
+
+      <Button variant="ghost" size="icon-sm"
+        onClick={() => addTab({ kind: 'terminal', label: `Terminal ${tabs.filter((t) => t.kind === 'terminal').length + 1}` })}
+        className="shrink-0 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+        title="Terminal baru"
+      >
+        <HugeiconsIcon icon={TerminalIcon} size={15} strokeWidth={1.75} />
+      </Button>
+      <Button variant="ghost" size="icon-sm"
         onClick={() => addTab({ kind: 'preview', label: 'Preview', cwd: 'http://localhost:3000' })}
-        className="text-[10px] text-muted-foreground hover:text-foreground px-1"
-        title="New preview tab"
+        className="shrink-0 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+        title="Preview baru"
       >
-        🌐
-      </button>
-      <button
+        <span className="text-sm">🌐</span>
+      </Button>
+      <Button variant="ghost" size="icon-sm"
         onClick={() => addTab({ kind: 'git', label: 'Git', cwd: undefined })}
-        className="text-[10px] text-muted-foreground hover:text-foreground px-1"
-        title="New git tab"
+        className="shrink-0 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+        title="Git panel"
       >
-        ⎇
-      </button>
-      <button
-        onClick={() => addTab({ kind: 'settings', label: 'Settings' })}
-        className="text-[10px] text-muted-foreground hover:text-foreground px-1"
-        title="Settings"
+        <HugeiconsIcon icon={GitBranchIcon} size={15} strokeWidth={1.75} />
+      </Button>
+      <Button variant="ghost" size="icon-sm"
+        onClick={() => addTab({ kind: 'settings', label: 'Pengaturan' })}
+        className="shrink-0 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+        title="Pengaturan"
       >
-        ⚙
-      </button>
+        <HugeiconsIcon icon={Settings01Icon} size={15} strokeWidth={1.75} />
+      </Button>
+
       {activeTab?.cwd && (
-        <span className="text-[10px] text-muted-foreground truncate max-w-64" title={activeTab.cwd}>
+        <span className="text-[10px] text-muted-foreground truncate max-w-64 hidden sm:block" title={activeTab.cwd}>
           {activeTab.cwd}
         </span>
       )}

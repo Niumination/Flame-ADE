@@ -22,6 +22,9 @@ jobs:
       matrix:
         include:
           - os: macos-latest
+            target: aarch64-apple-darwin
+            suffix: macos-aarch64
+          - os: macos-latest
             target: x86_64-apple-darwin
             suffix: macos-x86_64
           - os: ubuntu-latest
@@ -60,23 +63,6 @@ jobs:
 
       - run: pnpm tauri build --target ${{ matrix.target }}
         name: Build Tauri app
-
-      - name: Install minisign (macOS)
-        if: matrix.os == 'macos-latest'
-        run: brew install minisign
-
-      - name: Install minisign (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get install -y minisign
-
-      - name: Sign artifacts
-        env:
-          MINISIGN_SECRET_KEY: ${{ secrets.MINISIGN_SECRET_KEY }}
-        run: |
-          find src-tauri/target/release/bundle -type f | while read f; do
-            echo "Signing: $f"
-            printf '%s' "$MINISIGN_SECRET_KEY" | minisign -Sm "$f" -P SKIP
-          done
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

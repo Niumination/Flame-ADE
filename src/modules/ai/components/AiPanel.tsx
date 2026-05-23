@@ -5,7 +5,7 @@ import { saveApiKey, loadAllApiKeys } from '../lib/keychain'
 import { runAgentStream } from '../lib/agent-runner'
 import { findSkill } from '../lib/skills'
 import { ApprovalDialog } from './ApprovalDialog'
-import { VoiceInput } from './VoiceInput'
+import { AiInputBar } from './AiInputBar'
 import type { AiProviderId } from '../lib/config'
 
 export function AiPanel() {
@@ -136,11 +136,11 @@ export function AiPanel() {
                 </button>
               </div>
             </div>
-      ) : activeSession ? (
-        <>
-          <ChatView sessionId={activeSession.id} />
-          <ApprovalDialog />
-        </>
+          ) : activeSession ? (
+            <>
+              <ChatView sessionId={activeSession.id} />
+              <ApprovalDialog />
+            </>
           ) : (
             <div className="flex-1 flex items-center justify-center text-muted-foreground text-xs">
               Select a session or create a new one
@@ -176,7 +176,6 @@ function ChatView({ sessionId }: { sessionId: string }) {
   const provider = useChatStore((s) => s.provider)
   const model = useChatStore((s) => s.model)
   const apiKeys = useChatStore((s) => s.apiKeys)
-  const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const endRef = useRef<HTMLDivElement>(null)
 
@@ -184,10 +183,10 @@ function ChatView({ sessionId }: { sessionId: string }) {
     endRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [session?.messages])
 
-  const handleSend = async () => {
-    if (!input.trim() || !session) return
+  const handleSend = async (message: string) => {
+    if (!message.trim() || !session) return
 
-    let messageContent = input.trim()
+    let messageContent = message.trim()
     const skillMatch = findSkill(messageContent)
     if (skillMatch) {
       messageContent = skillMatch.skill.prompt + '\n\n' + skillMatch.args
@@ -200,7 +199,6 @@ function ChatView({ sessionId }: { sessionId: string }) {
       timestamp: Date.now(),
     }
     addMessage(sessionId, userMsg)
-    setInput('')
     setIsLoading(true)
 
     const apiKey = apiKeys[provider]
@@ -273,24 +271,11 @@ function ChatView({ sessionId }: { sessionId: string }) {
         <div ref={endRef} />
       </div>
 
-      <div className="border-t border-border p-2 flex gap-1">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-          placeholder="Type /explain, /fix, /test..."
-          className="flex-1 bg-muted text-foreground text-xs rounded px-2 py-1.5 border border-border outline-none"
-        />
-        <VoiceInput onTranscript={(text) => setInput((p) => p + text)} disabled={isLoading} />
-        <button
-          onClick={handleSend}
-          disabled={isLoading || !input.trim()}
-          className="bg-primary text-white text-xs rounded px-3 py-1.5 disabled:opacity-50"
-        >
-          Send
-        </button>
-      </div>
+      <AiInputBar
+        onSend={handleSend}
+        onStop={() => setIsLoading(false)}
+        isStreaming={isLoading}
+      />
     </div>
   )
 }

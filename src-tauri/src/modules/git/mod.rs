@@ -1,4 +1,5 @@
 use serde::Serialize;
+use std::collections::HashMap;
 use std::process::Command;
 
 #[cfg(test)]
@@ -232,4 +233,240 @@ pub fn git_branches(path: String) -> Result<Vec<GitBranch>, String> {
 pub fn git_checkout(path: String, branch: String) -> Result<(), String> {
     git(&["checkout", &branch], &path)?;
     Ok(())
+}
+
+// ── Extended git commands for git-history module ──────────────
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GitLogDetail {
+    pub sha: String,
+    pub short_sha: String,
+    pub subject: String,
+    pub author: String,
+    pub author_email: String,
+    pub timestamp_secs: i64,
+    pub parents: Vec<String>,
+    pub insertions: i32,
+    pub deletions: i32,
+    pub files_changed: i32,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GitCommitFileChange {
+    pub path: String,
+    pub original_path: Option<String>,
+    pub status: String,
+    pub status_label: String,
+    pub added: i32,
+    pub removed: i32,
+    pub is_binary: bool,
+}
+
+fn parse_shortstat(line: &str) -> (i32, i32, i32) {
+    let parts: Vec<&str> = line.split(',').map(|s| s.trim()).collect();
+    let mut files_changed = 0i32;
+    let mut insertions = 0i32;
+    let mut deletions = 0i32;
+    for part in &parts {
+        if part.contains("file") {
+            files_changed = part
+                .split_whitespace()
+                .next()
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(0);
+        } else if part.contains("insertion") {
+            insertions = part
+                .split_whitespace()
+                .next()
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(0);
+        } else if part.contains("deletion") {
+            deletions = part
+                .split_whitespace()
+                .next()
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(0);
+        }
+    }
+    (files_changed, insertions, deletions)
+}
+
+#[tauri::command]
+pub fn git_log_detail(
+    path: String,
+    max_count: Option<u32>,
+    before_sha: Option<String>,
+) -> Result<Vec<GitLogDetail>, String> {
+    let count = max_count.unwrap_or(30);
+    let mut args: Vec<String> = vec!["log".to_string()];
+    if let Some(sha) = &before_sha {
+        args.push(sha.clone());
+    }
+    args.push(format!("--max-count={}", count));
+    args.push("---|||%H|||%h|||%s|||%an|||%ae|||%at|||%P".to_string());
+    args.push("--shortstat".to_string());
+    let str_args: Vec<&str> = args.iter().map(|s| s.as_str()).collect();
+    let output = git(&str_args, &path)?;
+
+    let mut commits = Vec::new();
+    let mut lines = output.lines().peekable();
+
+    while lines.peek().is_some() {
+        let line = lines.next().unwrap();
+        if !line.starts_with("---") {
+            continue;
+        }
+        let rest = if line.len() > 3 { &line[3..] } else { continue };
+        let fields: Vec<&str> = rest.split("|||").collect();
+        if fields.len() < 7 {
+            continue;
+        }
+        let sha = fields[0].to_string();
+        let short_sha = fields[1].to_string();
+        let subject = fields[2].to_string();
+        let author = fields[3].to_string();
+        let author_email = fields[4].to_string();
+        let timestamp_secs: i64 = fields[5].parse().unwrap_or(0);
+        let parents: Vec<String> = fields[6]
+            .split_whitespace()
+            .map(|s| s.to_string())
+            .collect();
+
+        let mut files_changed = 0i32;
+        let mut insertions = 0i32;
+        let mut deletions = 0i32;
+
+        if let Some(stat_line) = lines.peek() {
+            let trimmed = stat_line.trim();
+            if !trimmed.is_empty() && trimmed.contains("changed") {
+                lines.next();
+                let (fc, ins, del) = parse_shortstat(trimmed);
+                files_changed = fc;
+                insertions = ins;
+                deletions = del;
+            }
+        }
+
+        commits.push(GitLogDetail {
+            sha,
+            short_sha,
+            subject,
+            author,
+            author_email,
+            timestamp_secs,
+            parents,
+            insertions,
+            deletions,
+            files_changed,
+        });
+    }
+
+    Ok(commits)
+}
+
+#[tauri::command]
+pub fn git_commit_files(path: String, sha: String) -> Result<Vec<GitCommitFileChange>, String> {
+    let name_status = git(&["show", "--name-status", "--format=", &sha], &path)?;
+    let numstat = git(
+        &["diff-tree", "--no-commit-id", "-r", "-c", "--numstat", &sha],
+        &path,
+    )?;
+
+    let mut numstat_map: HashMap<String, (i32, i32, bool)> = HashMap::new();
+    for line in numstat.lines() {
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+        let parts: Vec<&str> = trimmed.splitn(3, '\t').collect();
+        if parts.len() >= 3 {
+            let added_str = parts[0].trim();
+            let removed_str = parts[1].trim();
+            let is_binary = added_str == "-" && removed_str == "-";
+            let added: i32 = if is_binary {
+                0
+            } else {
+                added_str.parse().unwrap_or(0)
+            };
+            let removed: i32 = if is_binary {
+                0
+            } else {
+                removed_str.parse().unwrap_or(0)
+            };
+            numstat_map.insert(parts[2].to_string(), (added, removed, is_binary));
+        }
+    }
+
+    let mut files = Vec::new();
+    for line in name_status.lines() {
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+
+        let first_char = trimmed.chars().next().unwrap_or(' ');
+        if first_char == ' ' || first_char == '\t' {
+            continue;
+        }
+
+        let (status, path, original_path) = if trimmed.starts_with('R') || trimmed.starts_with('C')
+        {
+            let parts: Vec<&str> = trimmed.splitn(3, '\t').collect();
+            if parts.len() >= 3 {
+                (
+                    parts[0].to_string(),
+                    parts[2].to_string(),
+                    Some(parts[1].to_string()),
+                )
+            } else if parts.len() >= 2 {
+                (parts[0].to_string(), parts[1].to_string(), None)
+            } else {
+                continue;
+            }
+        } else {
+            let parts: Vec<&str> = trimmed.splitn(2, '\t').collect();
+            if parts.len() >= 2 {
+                (parts[0].to_string(), parts[1].to_string(), None)
+            } else {
+                continue;
+            }
+        };
+
+        let status_upper = status.chars().next().unwrap_or(' ').to_string();
+        let status_label = match status_upper.as_str() {
+            "A" => "Added",
+            "M" => "Modified",
+            "D" => "Deleted",
+            "R" => "Renamed",
+            "C" => "Copied",
+            _ => &status,
+        }
+        .to_string();
+
+        let file_path = path.clone();
+        let (added, removed, is_binary) = match numstat_map.get(&file_path) {
+            Some(&(a, r, b)) => (a, r, b),
+            None => (0, 0, false),
+        };
+
+        files.push(GitCommitFileChange {
+            path: file_path,
+            original_path,
+            status: status_upper,
+            status_label,
+            added,
+            removed,
+            is_binary,
+        });
+    }
+
+    Ok(files)
+}
+
+#[tauri::command]
+pub fn git_remote_url(path: String) -> Result<String, String> {
+    let url = git(&["remote", "get-url", "origin"], &path)?;
+    Ok(url)
 }

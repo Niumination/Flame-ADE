@@ -54,6 +54,8 @@ export async function runAgentStream(
     } as any)
   }
 
+  store.getState().setStreaming(true)
+
   try {
     const msgId = `msg-${Date.now()}-stream`
     store.getState().addMessage(sessionId, {
@@ -78,5 +80,7 @@ export async function runAgentStream(
   } catch (e: any) {
     const msg = e?.message || String(e)
     onError(msg)
+  } finally {
+    store.getState().setStreaming(false)
   }
 }

@@ -1,2 +1,2 @@
 export { EditorStack } from './EditorStack'
-export { getLanguageExtension, getTheme } from './lib/extensions'
+export { getLanguageExtension, buildSharedExtensions } from './lib/extensions'
