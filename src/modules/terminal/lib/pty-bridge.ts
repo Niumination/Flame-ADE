@@ -1,4 +1,4 @@
-import { listen, type UnlistenFn } from '@tauri-apps/api/event'
+import { listen } from '@tauri-apps/api/event'
 import { invoke } from '@tauri-apps/api/core'
 import { useEffect, useRef, useCallback } from 'react'
 
@@ -12,21 +12,49 @@ export interface PtyBridge {
   onExit: (cb: (exitCode?: number) => void) => void
 }
 
-let listeners: Array<{
-  cb: (data: string) => void
-  exitCb: (exitCode?: number) => void
-  unlistenData: UnlistenFn | null
-  unlistenExit: UnlistenFn | null
-}> = []
+const dataCallbacks = new Map<string, (data: string) => void>()
+const exitCallbacks = new Map<string, (exitCode?: number) => void>()
+
+let listenersReady: Promise<void> | null = null
+
+function ensureListeners(): Promise<void> {
+  if (listenersReady) return listenersReady
+  listenersReady = Promise.all([
+    listen('pty-data', (event: any) => {
+      const payload = event.payload as { session_id: string; data: string }
+      dataCallbacks.get(payload.session_id)?.(payload.data)
+    }),
+    listen('pty-exit', (event: any) => {
+      const payload = event.payload as { session_id: string; exit_code?: number }
+      exitCallbacks.get(payload.session_id)?.(payload.exit_code)
+    }),
+  ]).then(() => {}) as Promise<void>
+  return listenersReady
+}
 
 export function usePtyBridge(): PtyBridge {
   const sessionIdRef = useRef<string | null>(null)
+  const dataCbRef = useRef<((data: string) => void) | null>(null)
+  const exitCbRef = useRef<((exitCode?: number) => void) | null>(null)
+
+  useEffect(() => {
+    ensureListeners()
+    return () => {
+      if (sessionIdRef.current) {
+        dataCallbacks.delete(sessionIdRef.current)
+        exitCallbacks.delete(sessionIdRef.current)
+      }
+    }
+  }, [])
 
   const create = useCallback(async (cols: number, rows: number, cwd?: string, shell?: string) => {
+    await ensureListeners()
     const id = await invoke<string>('pty_create', {
       args: { cols, rows, cwd: cwd || null, shell: shell || null },
     })
     sessionIdRef.current = id
+    if (dataCbRef.current) dataCallbacks.set(id, dataCbRef.current)
+    if (exitCbRef.current) exitCallbacks.set(id, exitCbRef.current)
     return id
   }, [])
 
@@ -42,37 +70,23 @@ export function usePtyBridge(): PtyBridge {
 
   const close = useCallback(async () => {
     if (!sessionIdRef.current) return
+    dataCallbacks.delete(sessionIdRef.current)
+    exitCallbacks.delete(sessionIdRef.current)
     await invoke('pty_close', { sessionId: sessionIdRef.current })
     sessionIdRef.current = null
   }, [])
 
   const onData = useCallback((cb: (data: string) => void) => {
-    listeners.push({ cb, exitCb: () => {}, unlistenData: null, unlistenExit: null })
+    dataCbRef.current = cb
+    if (sessionIdRef.current) {
+      dataCallbacks.set(sessionIdRef.current, cb)
+    }
   }, [])
 
   const onExit = useCallback((cb: (exitCode?: number) => void) => {
-    const last = listeners[listeners.length - 1]
-    if (last) last.exitCb = cb
-  }, [])
-
-  useEffect(() => {
-    let unlistenData: UnlistenFn | null = null
-    let unlistenExit: UnlistenFn | null = null
-
-    listen('pty-data', (event: any) => {
-      const payload = event.payload as { session_id: string; data: string }
-      listeners.forEach((l) => l.cb(payload.data))
-    }).then((u) => { unlistenData = u })
-
-    listen('pty-exit', (event: any) => {
-      const payload = event.payload as { session_id: string; exit_code?: number }
-      listeners.forEach((l) => l.exitCb(payload.exit_code))
-    }).then((u) => { unlistenExit = u })
-
-    return () => {
-      unlistenData?.()
-      unlistenExit?.()
-      listeners = []
+    exitCbRef.current = cb
+    if (sessionIdRef.current) {
+      exitCallbacks.set(sessionIdRef.current, cb)
     }
   }, [])
 

@@ -63,6 +63,15 @@ All 7 tasks done. Terminal works with multi-tab, PTY backend, shell integration.
 - Rust test coverage: 67 tests (50 unit + 17 integration) ✅
 - TypeScript test coverage: 52 tests (5 files) ✅
 - CI/CD workflows: CI (push/PR) + Release (tag v*) ✅
+- v0.6.1 critical bugfixes: secrets_get, PTY race+leak, OSC cwd tracking, CSP iframes, preview onUrlChange ✅
+- Settings module: theme, font size, AI provider config ✅
+
+### Design Skills — Integrated from Owl-Listener/designer-skills 🎨
+- [x] `ui-design` — 14 sub-skills (color, typography, layout, responsive, visual hierarchy, dark mode, spacing, Gestalt principles) + 4 workflows
+- [x] `design-systems` — 11 sub-skills (tokens, components, accessibility, theming, motion, naming, localization) + 3 workflows
+- [x] `visual-critique` — 4 sub-skills (hierarchy, brand, composition, typography) + 1 critique-screen workflow
+- [x] Sub-agents: `@ui-designer`, `@design-system-engineer`, `@visual-critic` (read-only, free tier models)
+- [x] Command: `/design` — design workflow coordinator
 
 ## Architecture
 
@@ -87,7 +96,7 @@ PTY shells are bootstrapped via injected init scripts in `src-tauri/src/modules/
 
 ### Frontend (`src/`)
 
-Single-window React app. Path alias `@/*` → `src/*`. Tabs are tagged-union (`{ kind: "terminal" | "editor" | "preview" | "ai-diff" | "git", … }`) and **not** unmounted on switch — they're hidden via `invisible pointer-events-none` so PTYs and dev servers keep streaming in the background.
+Single-window React app. Path alias `@/*` → `src/*`. Tabs are tagged-union (`{ kind: "terminal" | "editor" | "preview" | "ai-diff" | "git" | "settings", … }`) and **not** unmounted on switch — they're hidden via `invisible pointer-events-none` so PTYs and dev servers keep streaming in the background.
 
 `App.tsx` wires modules together — keep it a coordinator. New features go inside the appropriate `modules/<area>/`.
 

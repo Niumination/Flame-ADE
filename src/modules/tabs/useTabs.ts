@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export type TabKind = 'terminal' | 'editor' | 'preview' | 'ai-diff' | 'git'
+export type TabKind = 'terminal' | 'editor' | 'preview' | 'ai-diff' | 'git' | 'settings'
 
 export interface Tab {
   id: string
@@ -111,6 +111,8 @@ export const useTabs = create<TabsState>((set, get) => ({
         return '✨'
       case 'git':
         return '⎇'
+      case 'settings':
+        return '⚙'
       default:
         return '📄'
     }

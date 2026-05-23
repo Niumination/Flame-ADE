@@ -56,8 +56,8 @@ pub async fn secrets_get(key: String) -> Result<SecretResponse, String> {
     let entry = Entry::new(KEYRING_SERVICE, &key).map_err(|e| e.to_string())?;
     match entry.get_password() {
         Ok(value) => Ok(SecretResponse {
-            key: key.clone(),
-            exists: !value.is_empty(),
+            key: value,
+            exists: true,
         }),
         Err(keyring::Error::NoEntry) => Ok(SecretResponse {
             key,

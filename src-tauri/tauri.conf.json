@@ -24,7 +24,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https: wss: https://releases.flame.ade"
+      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https: wss: https://releases.flame.ade; frame-src 'self' http://localhost:* http://127.0.0.1:*"
     },
     "macOSPrivateApi": true
   },

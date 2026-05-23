@@ -4,12 +4,13 @@ import { useTerminalSession } from './lib/useTerminalSession'
 interface TerminalStackProps {
   theme?: string
   cwd?: string
+  tabId?: string
   className?: string
 }
 
-export function TerminalStack({ theme = 'default', cwd, className }: TerminalStackProps) {
+export function TerminalStack({ theme = 'default', cwd, tabId, className }: TerminalStackProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const { isReady } = useTerminalSession(containerRef, theme, cwd)
+  const { isReady } = useTerminalSession(containerRef, theme, cwd, tabId)
 
   return (
     <div className={`relative h-full w-full ${className || ''}`}>

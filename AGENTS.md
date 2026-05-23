@@ -108,19 +108,23 @@ flame-ade/
 - [x] Documentation finalized — all docs synced with code, milestone checklist updated
 - [x] Release prep — version 0.6.0, CSP hardened, updater public key configured inline
 
-### Post-Phase 5 Polish 🎯
-- [x] Git init + first commit (100 files)
-- [x] Fix runtime panic in sort comparator (total order violation)
-- [x] Test infrastructure: vitest + @testing-library (2 smoke tests ✅)
-- [x] Rust integration tests (6 module existence tests ✅)
-- [x] shadcn/ui primitives installed (@radix-ui/react-slot, Button component)
-- [x] `pnpm tauri dev` verified — compiles + launches without errors
-- [x] `pnpm tauri build` — compiles successfully (full release build takes ~5m)
+### Design Skills — Integrated from Owl-Listener/designer-skills 🎨
+- [x] `ui-design` — 14 sub-skills (color, typography, layout, responsive, visual hierarchy, dark mode, spacing, Gestalt principles) + 4 workflows
+- [x] `design-systems` — 11 sub-skills (tokens, components, accessibility, theming, motion, naming, localization) + 3 workflows
+- [x] `visual-critique` — 4 sub-skills (hierarchy, brand, composition, typography) + 1 critique-screen workflow
+- [x] Sub-agents: `@ui-designer`, `@design-system-engineer`, `@visual-critic` (read-only, free tier models)
+- [x] Command: `/design` — design workflow coordinator
+
+### v0.6.1 — Critical Bugfixes 🔧
+- [x] Fix `secrets_get` — returns actual password value instead of key name
+- [x] Fix PTY race condition — `ensureListeners()` awaited before `bridge.create()`
+- [x] Fix PTY listener leak — `Map<sessionId, callback>` routing replaces shared array
+- [x] Fix OSC 7 cwd tracking — `parseOsc7()` called on incoming PTY data, updates `tab.cwd`
+- [x] Fix CSP blocking preview iframes — `frame-src` added to CSP
+- [x] Fix Preview `onUrlChange` not passed — `previewUrls` state + callback wired
+- [x] New Settings module — theme, font size, AI provider config (⚙ button in header)
+- [x] 5 pre-existing Rust clippy warnings fixed
 - [x] Zero Rust warnings, zero TypeScript errors
-- [x] Engon verification skill created
-- [x] Rust test coverage: 67 tests (50 unit + 17 integration) ✅
-- [x] TypeScript test coverage: 52 tests (5 files) ✅
-- [x] CI/CD workflows: CI (push/PR) + Release (tag v*) ✅
 
 ## Key Decisions
 1. **macOS Tahoe first** — test and optimize for macOS 26.5 before other platforms

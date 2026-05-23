@@ -567,12 +567,11 @@ pub fn fs_search(pattern: String, root_path: Option<String>) -> Result<Vec<Strin
         .max_depth(10)
         .into_iter()
         .filter_entry(|e| !e.file_name().to_string_lossy().starts_with('.'))
+        .flatten()
     {
-        if let Ok(entry) = entry {
-            let name = entry.file_name().to_string_lossy().to_lowercase();
-            if name.contains(&pattern_lower) {
-                results.push(entry.path().to_string_lossy().to_string());
-            }
+        let name = entry.file_name().to_string_lossy().to_lowercase();
+        if name.contains(&pattern_lower) {
+            results.push(entry.path().to_string_lossy().to_string());
         }
     }
 
@@ -602,7 +601,7 @@ pub fn fs_grep(pattern: String, root_path: Option<String>) -> Result<Vec<GrepMat
         if let Ok(entry) = entry {
             if entry.file_type().is_file() {
                 let path = entry.path();
-                let is_text = path.extension().map_or(true, |ext| {
+                let is_text = path.extension().is_none_or(|ext| {
                     matches!(
                         ext.to_string_lossy().as_ref(),
                         "rs" | "ts"

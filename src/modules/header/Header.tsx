@@ -57,6 +57,13 @@ export function Header({ showExplorer, onToggleExplorer, showAi, onToggleAi }: H
       >
         ⎇
       </button>
+      <button
+        onClick={() => addTab({ kind: 'settings', label: 'Settings' })}
+        className="text-[10px] text-muted-foreground hover:text-foreground px-1"
+        title="Settings"
+      >
+        ⚙
+      </button>
       {activeTab?.cwd && (
         <span className="text-[10px] text-muted-foreground truncate max-w-64" title={activeTab.cwd}>
           {activeTab.cwd}

@@ -10,6 +10,7 @@ use modules::git;
 use modules::pty::{self, PtyState};
 use modules::secrets;
 use modules::shell::{self, ShellState};
+use tauri::Manager;
 
 pub fn run() {
     tauri::Builder::default()
@@ -53,7 +54,7 @@ pub fn run() {
             git::git_branches,
             git::git_checkout,
         ])
-        .setup(|_app| {
+        .setup(|app| {
             #[cfg(debug_assertions)]
             {
                 let window = app.get_webview_window("main").unwrap();

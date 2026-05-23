@@ -254,6 +254,36 @@
           "*": "ask"
         }
       }
+    },
+    "ui-designer": {
+      "description": "UI design expert — color systems, typography, layout grids, responsive, visual hierarchy, and Gestalt principles",
+      "mode": "subagent",
+      "model": "opencode/nemotron-3-super-free",
+      "temperature": 0.3,
+      "permission": {
+        "edit": "deny",
+        "bash": "deny"
+      }
+    },
+    "design-system-engineer": {
+      "description": "Design system specialist — tokens, component specs, theming, accessibility audits, motion systems, and naming conventions",
+      "mode": "subagent",
+      "model": "opencode/minimax-m2.5-free",
+      "temperature": 0.2,
+      "permission": {
+        "edit": "deny",
+        "bash": "deny"
+      }
+    },
+    "visual-critic": {
+      "description": "Visual design reviewer — hierarchy analysis, brand consistency, composition evaluation, and typography audits",
+      "mode": "subagent",
+      "model": "opencode/deepseek-v4-flash-free",
+      "temperature": 0.1,
+      "permission": {
+        "edit": "deny",
+        "bash": "deny"
+      }
     }
   },
   "command": {
@@ -326,6 +356,12 @@
     "engon": {
       "template": "Jalankan verifikasi proyek Flame ADE menyeluruh.\n\nGunakan skill engon untuk melakukan pengecekan:\n1. Struktur Rust backend\n2. Struktur frontend React\n3. Kompilasi (cargo check + tsc --noEmit)\n4. Test coverage\n5. Dokumentasi\n6. Dev server readiness\n\nLoad skill engon, breakdown ke sub-agent, lalu hasilkan laporan akhir dengan format:\n╔══════════════════════════════════════╗\n║       Flame ADE — Engon Report       ║\n╠══════════════════════════════════════╣\n║ [area]              [status]  [icon] ║\n╚══════════════════════════════════════╝\n\nSertakan fix command untuk setiap issue.",
       "description": "Run comprehensive project verification",
+      "agent": "build",
+      "model": "opencode/big-pickle"
+    },
+    "design": {
+      "template": "You are a design workflow coordinator for Flame ADE. Available design domains:\n\n@ui-designer — UI design: colors, typography, layout, responsive, visual hierarchy, dark mode, spacing, Gestalt principles\n@design-system-engineer — Design systems: tokens, components, theming, accessibility, motion, naming\n@visual-critic — Visual critique: hierarchy, brand consistency, composition, typography audits\n\nAsk the user which domain they need help with, then load the relevant skill and coordinate with the appropriate sub-agent.",
+      "description": "Design workflow coordinator",
       "agent": "build",
       "model": "opencode/big-pickle"
     }

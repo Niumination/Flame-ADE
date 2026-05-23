@@ -13,6 +13,7 @@ const AiDiffPanel = lazy(() => import('./modules/ai').then(m => ({ default: m.Ai
 const ExplorerPanel = lazy(() => import('./modules/explorer').then(m => ({ default: m.ExplorerPanel })))
 const GitPanel = lazy(() => import('./modules/git').then(m => ({ default: m.GitPanel })))
 const PreviewPanel = lazy(() => import('./modules/preview').then(m => ({ default: m.PreviewPanel })))
+const SettingsPanel = lazy(() => import('./modules/settings').then(m => ({ default: m.SettingsPanel })))
 
 function AppContent() {
   const tabs = useTabs((s) => s.tabs)
@@ -21,6 +22,7 @@ function AppContent() {
   const [homeDir, setHomeDir] = useState('')
   const [showExplorer, setShowExplorer] = useState(true)
   const [showAi, setShowAi] = useState(false)
+  const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({})
   const fileContents = useRef<Map<string, string>>(new Map())
 
   useEffect(() => {
@@ -84,7 +86,7 @@ function AppContent() {
                   : 'absolute inset-0 invisible pointer-events-none'
               }
             >
-              {tab.kind === 'terminal' && <TerminalStack cwd={tab.cwd} />}
+              {tab.kind === 'terminal' && <TerminalStack cwd={tab.cwd} tabId={tab.id} />}
               {tab.kind === 'editor' && (
                 <EditorStack
                   path={tab.cwd || ''}
@@ -93,7 +95,10 @@ function AppContent() {
               )}
               {tab.kind === 'preview' && (
                 <Suspense fallback={<div />}>
-                  <PreviewPanel url={tab.cwd || 'http://localhost:3000'} />
+                  <PreviewPanel
+                    url={previewUrls[tab.id] || tab.cwd || 'http://localhost:3000'}
+                    onUrlChange={(url) => setPreviewUrls((p) => ({ ...p, [tab.id]: url }))}
+                  />
                 </Suspense>
               )}
               {tab.kind === 'ai-diff' && (
@@ -104,6 +109,11 @@ function AppContent() {
               {tab.kind === 'git' && (
                 <Suspense fallback={<div />}>
                   <GitPanel repoPath={tab.cwd || homeDir} />
+                </Suspense>
+              )}
+              {tab.kind === 'settings' && (
+                <Suspense fallback={<div />}>
+                  <SettingsPanel />
                 </Suspense>
               )}
             </div>

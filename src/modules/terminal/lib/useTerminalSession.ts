@@ -3,6 +3,8 @@ import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import { WebglAddon } from '@xterm/addon-webgl'
 import { usePtyBridge } from './pty-bridge'
+import { parseOsc7, parseOsc133 } from './osc-handlers'
+import { useTabs } from '../../tabs'
 import { themes } from './themes'
 
 export interface TerminalSession {
@@ -15,6 +17,7 @@ export function useTerminalSession(
   containerRef: React.RefObject<HTMLDivElement | null>,
   theme: string = 'default',
   cwd?: string,
+  tabId?: string,
 ): TerminalSession {
   const terminalRef = useRef<Terminal | null>(null)
   const fitAddonRef = useRef<FitAddon | null>(null)
@@ -58,6 +61,11 @@ export function useTerminalSession(
     })
 
     bridge.onData((data) => {
+      const dir = parseOsc7(data)
+      if (dir && tabId) {
+        useTabs.getState().updateTab(tabId, { cwd: dir })
+      }
+      parseOsc133(data)
       term.write(data)
     })
 

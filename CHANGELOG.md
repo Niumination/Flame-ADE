@@ -2,6 +2,22 @@
 
 All notable changes to Flame ADE.
 
+## [0.6.1] — 2026-05-23
+
+### Critical Bugfixes 🔧
+- **Fix: secrets_get returns password value, not key name** (`secrets/mod.rs`) — `key: value` instead of `key: key.clone()`. API keys could never load or save.
+- **Fix: PTY event race condition** (`pty-bridge.ts`) — `listen()` is now awaited via `ensureListeners()` before `bridge.create()` spawns the PTY, so no events are lost. Module-level listener leak fixed — per-session `Map<sessionId, callback>` routing instead of shared array that cleared all listeners on unmount.
+- **Fix: OSC 7 cwd tracking wired** (`useTerminalSession.ts`, `TerminalStack.tsx`, `App.tsx`) — `parseOsc7()` now called on incoming PTY data; updates tab cwd in Zustand store via `useTabs.updateTab()`. Tab ID propagated from App → TerminalStack → useTerminalSession.
+- **Fix: CSP blocks preview iframes** (`tauri.conf.json`) — added `frame-src 'self' http://localhost:* http://127.0.0.1:*` to CSP.
+- **Fix: Preview onUrlChange not wired** (`App.tsx`) — `previewUrls` state + `onUrlChange` callback now passed to `PreviewPanel`.
+
+### New Features ✨
+- **Settings module** (`src/modules/settings/`) — Theme selector (dark/light/Tokyo Night/Nord), font size (12–20px), AI provider configuration. Accessible via ⚙ button in header or `settings` tab kind.
+
+### Cleanup 🧹
+- Fixed 5 pre-existing Rust clippy warnings: `manual_flatten`, `unnecessary_map_or`, 2× `unnecessary_cast`, `write_with_newline`.
+- Fixed Rust `use tauri::Manager` import and `_app` → `app` rename.
+
 ## [0.6.0] — 2026-05-22
 
 ### Phase 1 — Foundation ✅ (Completed)
@@ -209,6 +225,13 @@ All notable changes to Flame ADE.
 - **useTabs store** (20 tests) — add, remove, setActive, update, move, duplicate, closeOther, closeTabsToRight, icons, edge cases
 - **TabBar component** (12 tests) — rendering, tab click, add/remove, context menu (duplicate, close other, close all, close), outside click dismiss
 - **ThemeProvider + useTheme** (12 tests) — dark default, theme switch, isDark detection, invalid theme, CSS variables, themes object validation
+
+### Design Skills — Integrated from Owl-Listener/designer-skills 🎨
+- Added 3 compiled opencode skills: `ui-design` (14 sub-skills), `design-systems` (11 sub-skills), `visual-critique` (4 sub-skills)
+- Added 3 read-only design sub-agents: `@ui-designer`, `@design-system-engineer`, `@visual-critic` (free tier models)
+- Added `/design` command — design workflow coordinator
+- Skills use compiled format from `.gemini/extensions/` — only 3 entries in system prompt (not 29 individual)
+- Architecture: hybrid approach — start with 3 priority skills, 6 more ready for future expansion
 
 ## [0.1.0] — Prototype
 

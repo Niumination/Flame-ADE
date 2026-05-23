@@ -236,7 +236,7 @@ pub async fn shell_session_write(
     let sessions = state.sessions.lock().map_err(|e| e.to_string())?;
     let session = sessions.get(&session_id).ok_or("Session not found")?;
     let mut stdin = session.stdin.lock().map_err(|e| e.to_string())?;
-    write!(stdin, "{}\n", input).map_err(|e| e.to_string())?;
+    writeln!(stdin, "{}", input).map_err(|e| e.to_string())?;
     stdin.flush().map_err(|e| e.to_string())?;
     Ok(())
 }

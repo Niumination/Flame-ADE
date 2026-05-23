@@ -158,8 +158,8 @@ pub fn pty_create(
 
     let pair = pty_system
         .openpty(PtySize {
-            rows: args.rows as u16,
-            cols: args.cols as u16,
+            rows: args.rows,
+            cols: args.cols,
             pixel_width: 0,
             pixel_height: 0,
         })
