@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { FolderGitTwoIcon, FolderTreeIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { useChatStore } from "@/modules/ai";
 import type { SidebarViewId } from "./types";
 
 export const SIDEBAR_RAIL_HEIGHT = 36;
@@ -19,6 +20,8 @@ type Props = {
 };
 
 export function SidebarRail({ activeView, onSelectView, changedCount }: Props) {
+  const isStreaming = useChatStore((s) => s.isStreaming)
+
   const items: RailItem[] = [
     { id: "explorer", label: "Files", icon: FolderTreeIcon },
     {
@@ -67,6 +70,10 @@ export function SidebarRail({ activeView, onSelectView, changedCount }: Props) {
           </button>
         );
       })}
+      <div className="flex items-center gap-1.5 border-l border-border/40 pl-2 ml-1">
+        <span className={cn('inline-block size-1.5 rounded-full', isStreaming ? 'bg-indigo-500 animate-pulse' : 'bg-green-500')} />
+        <span className="text-[9px] text-muted-foreground uppercase tracking-wider">{isStreaming ? 'AI' : 'Ready'}</span>
+      </div>
     </div>
   );
 }

@@ -1,12 +1,13 @@
 import { memo } from 'react'
 import { useTabs } from '../tabs'
 import { cn } from '@/lib/utils'
-import { AiStatusBarControls } from '@/modules/ai'
+import { AiStatusBarControls, useChatStore } from '@/modules/ai'
 
 export const StatusBar = memo(function StatusBar() {
   const tabs = useTabs((s) => s.tabs)
   const activeTabId = useTabs((s) => s.activeTabId)
   const activeTab = tabs.find((t) => t.id === activeTabId)
+  const isStreaming = useChatStore((s) => s.isStreaming)
 
   return (
     <footer className="flex h-7 shrink-0 items-center gap-3 border-t border-border/60 bg-card/60 px-3 text-[11px] text-muted-foreground">
@@ -18,14 +19,18 @@ export const StatusBar = memo(function StatusBar() {
         )}
       </div>
       <div className="flex shrink-0 items-center gap-3">
+        <span className="flex items-center gap-1">
+          <span className={cn('inline-block size-1.5 rounded-full', isStreaming ? 'bg-indigo-500 animate-pulse' : 'bg-green-500')} />
+          <span className="text-[10px]">{isStreaming ? 'AI Streaming' : 'AI Ready'}</span>
+        </span>
         <AiStatusBarControls />
-        <span>{tabs.length} tab{tabs.length !== 1 ? '' : ''}</span>
+        <span>{tabs.length} tab</span>
         <span className={cn(
           'capitalize',
           activeTab?.kind === 'terminal' && 'text-green-500',
           activeTab?.kind === 'editor' && 'text-blue-500',
         )}>
-          {activeTab?.kind || 'tidak ada tab'}
+          {activeTab?.kind || '-'}
         </span>
       </div>
     </footer>

@@ -4,6 +4,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { CodeIcon, GitBranchIcon, Settings01Icon, TerminalIcon } from '@hugeicons/core-free-icons'
 import { IS_MAC } from '@/lib/platform'
 import { AgentSwitcher } from '@/modules/ai'
+import { FlameLogo } from '@/components/ui/FlameLogo'
 
 interface HeaderProps {
   showExplorer?: boolean
@@ -49,7 +50,8 @@ export function Header({ showExplorer, onToggleExplorer, showAi, onToggleAi }: H
       <span className="mx-1 h-5 w-px shrink-0 bg-border" />
 
       <div className="flex min-w-0 flex-1 items-center gap-2" data-tauri-drag-region>
-        <span className="text-sm font-semibold text-foreground shrink-0">Flame ADE</span>
+        <FlameLogo size={5} />
+        <span className="text-sm font-semibold italic text-foreground shrink-0">Flame <span className="text-indigo-500">ADE</span></span>
         {activeTab && (
           <>
             <span className="text-muted-foreground text-xs">/</span>

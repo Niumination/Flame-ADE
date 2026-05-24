@@ -6,6 +6,7 @@ import { runAgentStream } from '../lib/agent-runner'
 import { findSkill } from '../lib/skills'
 import { ApprovalDialog } from './ApprovalDialog'
 import { AiInputBar } from './AiInputBar'
+import { AiCoreVisualizer } from './AiCoreVisualizer'
 import type { AiProviderId } from '../lib/config'
 
 export function AiPanel() {
@@ -131,6 +132,7 @@ export function AiPanel() {
         </div>
       ) : (
         <div className="flex-1 flex flex-col overflow-hidden">
+          <AiCoreVisualizer />
           {sessions.length === 0 ? (
             <div className="flex-1 flex items-center justify-center text-muted-foreground px-4 text-center">
               <div className="flex flex-col gap-2">
@@ -270,8 +272,12 @@ function ChatView({ sessionId }: { sessionId: string }) {
         ))}
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-muted text-foreground rounded-lg px-3 py-1.5 text-xs">
-              <span className="animate-pulse">Thinking...</span>
+            <div className="bg-muted text-foreground rounded-lg px-3 py-2 text-xs">
+              <div className="flex gap-1">
+                <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" />
+                <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.1s]" />
+                <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.2s]" />
+              </div>
             </div>
           </div>
         )}
