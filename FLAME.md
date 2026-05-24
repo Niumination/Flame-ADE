@@ -137,7 +137,7 @@ Flame ADE is a fork of Terax AI with specific modifications. To simplify syncing
 - [x] Auto-start toggle — Settings → System ✅
 - [x] AgentStatusPill isStreaming — wired to chatStore ✅
 - [ ] macOS Tahoe testing (PENDING)
-- [ ] Window state persistence (PENDING)
+- [x] Window state persistence — tauri-plugin-window-state + capability ✅
 
 ### Phase 7 — Documentation & Verification ✅
 - [x] Full `FLAME.md` patch table (P1–P13) ✅

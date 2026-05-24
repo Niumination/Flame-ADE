@@ -9,8 +9,14 @@ function TabItem({ tab, isActive }: { tab: Tab; isActive: boolean }) {
   const { setActiveTab, removeTab, closeOtherTabs, closeTabsToRight, duplicateTab } = useTabs()
   const [showMenu, setShowMenu] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  const dragRef = useRef<HTMLDivElement>(null)
+  const tabRef = useRef<HTMLDivElement>(null)
   const [dragging, setDragging] = useState(false)
+
+  useEffect(() => {
+    if (isActive && tabRef.current) {
+      tabRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' })
+    }
+  }, [isActive])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -35,7 +41,7 @@ function TabItem({ tab, isActive }: { tab: Tab; isActive: boolean }) {
   return (
     <div className="relative">
       <div
-        ref={dragRef}
+        ref={tabRef}
         draggable
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}

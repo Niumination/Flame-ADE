@@ -7,9 +7,10 @@ interface FileTreeProps {
   onToggleDir: (path: string) => void
   onSelect: (entry: FileEntry) => void
   selectedPath?: string
+  onContextMenu?: (e: React.MouseEvent, entry: FileEntry) => void
 }
 
-export function FileTree({ entries, expandedDirs, onToggleDir, onSelect, selectedPath }: FileTreeProps) {
+export function FileTree({ entries, expandedDirs, onToggleDir, onSelect, selectedPath, onContextMenu }: FileTreeProps) {
   return (
     <div className="select-none text-sm">
       {entries.map((entry) => (
@@ -21,6 +22,7 @@ export function FileTree({ entries, expandedDirs, onToggleDir, onSelect, selecte
           onSelect={onSelect}
           selectedPath={selectedPath}
           depth={0}
+          onContextMenu={onContextMenu}
         />
       ))}
     </div>
@@ -34,9 +36,10 @@ interface FileTreeNodeProps {
   onSelect: (entry: FileEntry) => void
   selectedPath?: string
   depth: number
+  onContextMenu?: (e: React.MouseEvent, entry: FileEntry) => void
 }
 
-function FileTreeNode({ entry, expandedDirs, onToggleDir, onSelect, selectedPath, depth }: FileTreeNodeProps) {
+function FileTreeNode({ entry, expandedDirs, onToggleDir, onSelect, selectedPath, depth, onContextMenu }: FileTreeNodeProps) {
   const isExpanded = expandedDirs.has(entry.path)
   const isSelected = selectedPath === entry.path
   const isDirectory = entry.kind === 'directory'
@@ -55,7 +58,13 @@ function FileTreeNode({ entry, expandedDirs, onToggleDir, onSelect, selectedPath
             onSelect(entry)
           }
         }}
+        onContextMenu={(e) => onContextMenu?.(e, entry)}
       >
+        {isDirectory && (
+          <span className="text-[10px] w-3 text-center text-muted-foreground">
+            {isExpanded ? '▼' : '▶'}
+          </span>
+        )}
         <span className="text-xs">{getFileIcon(entry.kind, entry.name)}</span>
         <span className="truncate">{entry.name}</span>
       </div>
@@ -70,6 +79,7 @@ function FileTreeNode({ entry, expandedDirs, onToggleDir, onSelect, selectedPath
               onSelect={onSelect}
               selectedPath={selectedPath}
               depth={depth + 1}
+              onContextMenu={onContextMenu}
             />
           ))}
         </div>

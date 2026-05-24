@@ -1,3 +1,5 @@
+import { invoke } from '@tauri-apps/api/core'
+
 export type AiProviderId =
   | 'openai'
   | 'anthropic'
@@ -7,6 +9,8 @@ export type AiProviderId =
   | 'cerebras'
   | 'openai-compatible'
   | 'opencode-zen'
+
+export const OPENCODE_ZEN_BASE = 'https://opencode.ai/zen/v1'
 
 export interface AiProviderConfig {
   id: AiProviderId
@@ -72,6 +76,9 @@ export const AI_PROVIDERS: AiProviderConfig[] = [
     id: 'opencode-zen',
     name: 'OpenCode Zen',
     models: [
+      'nemotron-3-super-free',
+      'deepseek-v4-flash-free',
+      'big-pickle',
       'claude-sonnet-4-5',
       'claude-haiku-4-5',
       'gpt-5.2-codex',
@@ -79,17 +86,35 @@ export const AI_PROVIDERS: AiProviderConfig[] = [
       'gpt-5.1-codex',
       'gemini-3-pro',
       'gemini-3-flash',
-      'big-pickle',
-      'deepseek-v4-flash-free',
-      'minimax-m2.5-free',
-      'nemotron-3-super-free',
-      'qwen3-coder-480b',
     ],
     needsApiKey: true,
-    defaultModel: 'claude-sonnet-4-5',
-    baseUrl: 'https://opencode.ai/zen/v1',
+    defaultModel: 'nemotron-3-super-free',
+    baseUrl: OPENCODE_ZEN_BASE,
   },
 ]
+
+export async function fetchOpenCodeZenModels(): Promise<string[]> {
+  try {
+    const result = await invoke<{ status: number; headers: Record<string, string>; body: number[] }>(
+      'ai_http_request',
+      {
+        url: `${OPENCODE_ZEN_BASE}/models`,
+        method: 'GET',
+        headers: {},
+        body: null,
+        allowPrivateNetwork: false,
+      },
+    )
+    const text = new TextDecoder().decode(new Uint8Array(result.body))
+    const data = JSON.parse(text)
+    if (data?.data && Array.isArray(data.data)) {
+      return data.data.map((m: { id: string }) => m.id)
+    }
+  } catch (e) {
+    console.error('[config] Failed to fetch OpenCode Zen models:', e)
+  }
+  return []
+}
 
 export function getProvider(id: AiProviderId): AiProviderConfig {
   return AI_PROVIDERS.find((p) => p.id === id) || AI_PROVIDERS[AI_PROVIDERS.length - 1]

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { FileTree } from './FileTree'
 import { useWorkspace } from './lib/useWorkspace'
 import type { FileEntry } from './lib/fs-bridge'
@@ -20,12 +20,24 @@ export function ExplorerPanel({ onFileSelect }: ExplorerPanelProps) {
     setWorkspace,
     refresh,
     pickAndSetWorkspace,
+    createItem,
+    renameItem,
+    deleteItem,
   } = useWorkspace()
   const [selectedPath, setSelectedPath] = useState<string>()
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const searchRef = useRef<HTMLInputElement>(null)
   const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set())
+  const [contextMenuTarget, setContextMenuTarget] = useState<FileEntry | null>(null)
+  const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 })
+  const contextMenuRef = useRef<HTMLDivElement>(null)
+  const [renamingPath, setRenamingPath] = useState<string | null>(null)
+  const [renameValue, setRenameValue] = useState('')
+  const renameRef = useRef<HTMLInputElement>(null)
+  const [creatingIn, setCreatingIn] = useState<{ parent: string; kind: 'file' | 'directory' } | null>(null)
+  const [createName, setCreateName] = useState('')
+  const createRef = useRef<HTMLInputElement>(null)
 
   const handleSelect = useCallback((entry: FileEntry) => {
     setSelectedPath(entry.path)
@@ -52,6 +64,53 @@ export function ExplorerPanel({ onFileSelect }: ExplorerPanelProps) {
       setSearchQuery('')
     }
   }, [isSearching])
+
+  const handleContextMenu = useCallback((e: React.MouseEvent, entry: FileEntry) => {
+    e.preventDefault()
+    setContextMenuPos({ x: e.clientX, y: e.clientY })
+    setContextMenuTarget(entry)
+  }, [])
+
+  useEffect(() => {
+    if (contextMenuTarget) {
+      const handler = (e: MouseEvent) => {
+        if (contextMenuRef.current && !contextMenuRef.current.contains(e.target as Node)) {
+          setContextMenuTarget(null)
+        }
+      }
+      setTimeout(() => document.addEventListener('mousedown', handler), 0)
+      return () => document.removeEventListener('mousedown', handler)
+    }
+  }, [contextMenuTarget])
+
+  useEffect(() => {
+    if (renamingPath) renameRef.current?.focus()
+  }, [renamingPath])
+
+  useEffect(() => {
+    if (creatingIn) createRef.current?.focus()
+  }, [creatingIn])
+
+  const handleRenameStart = useCallback((entry: FileEntry) => {
+    setRenamingPath(entry.path)
+    setRenameValue(entry.name)
+    setContextMenuTarget(null)
+  }, [])
+
+  const handleRenameSubmit = useCallback(async () => {
+    if (!renamingPath || !renameValue.trim()) return
+    const parent = renamingPath.split('/').slice(0, -1).join('/')
+    await renameItem(renamingPath, parent + '/' + renameValue.trim())
+    setRenamingPath(null)
+    setRenameValue('')
+  }, [renamingPath, renameValue, renameItem])
+
+  const handleCreateSubmit = useCallback(async () => {
+    if (!creatingIn || !createName.trim()) return
+    await createItem(creatingIn.parent, createName.trim(), creatingIn.kind)
+    setCreatingIn(null)
+    setCreateName('')
+  }, [creatingIn, createName, createItem])
 
   const filteredTree = searchQuery
     ? tree.filter((e) => filterEntry(e, searchQuery))
@@ -148,15 +207,77 @@ export function ExplorerPanel({ onFileSelect }: ExplorerPanelProps) {
         )}
 
         {workspacePath && !loading && !error && (
-          <FileTree
-            entries={filteredTree}
-            expandedDirs={expandedDirs}
-            onToggleDir={toggleDir}
-            onSelect={handleSelect}
-            selectedPath={selectedPath}
-          />
+          <>
+            {creatingIn && (
+              <div className="px-2 py-1">
+                <input
+                  ref={createRef}
+                  className="w-full rounded border border-border bg-muted px-2 py-0.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                  placeholder={creatingIn.kind === 'file' ? 'filename.txt' : 'folder-name'}
+                  value={createName}
+                  onChange={(e) => setCreateName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleCreateSubmit()
+                    if (e.key === 'Escape') { setCreatingIn(null); setCreateName('') }
+                  }}
+                />
+              </div>
+            )}
+            <FileTree
+              entries={filteredTree}
+              expandedDirs={expandedDirs}
+              onToggleDir={toggleDir}
+              onSelect={handleSelect}
+              selectedPath={selectedPath}
+              onContextMenu={handleContextMenu}
+            />
+            {renamingPath && (
+              <div className="px-2 py-1">
+                <input
+                  ref={renameRef}
+                  className="w-full rounded border border-border bg-muted px-2 py-0.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                  value={renameValue}
+                  onChange={(e) => setRenameValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleRenameSubmit()
+                    if (e.key === 'Escape') { setRenamingPath(null); setRenameValue('') }
+                  }}
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
+
+      {contextMenuTarget && (
+        <div
+          ref={contextMenuRef}
+          className="fixed z-50 min-w-[140px] rounded-md border border-border bg-popover py-1 shadow-lg"
+          style={{ left: contextMenuPos.x, top: contextMenuPos.y }}
+        >
+          {contextMenuTarget.kind === 'directory' && (
+            <>
+              <button
+                className="w-full px-3 py-1 text-left text-xs text-popover-foreground hover:bg-muted/50"
+                onClick={() => { setCreatingIn({ parent: contextMenuTarget.path, kind: 'file' }); setContextMenuTarget(null) }}
+              >New File</button>
+              <button
+                className="w-full px-3 py-1 text-left text-xs text-popover-foreground hover:bg-muted/50"
+                onClick={() => { setCreatingIn({ parent: contextMenuTarget.path, kind: 'directory' }); setContextMenuTarget(null) }}
+              >New Folder</button>
+              <div className="border-t border-border my-1" />
+            </>
+          )}
+          <button
+            className="w-full px-3 py-1 text-left text-xs text-popover-foreground hover:bg-muted/50"
+            onClick={() => handleRenameStart(contextMenuTarget)}
+          >Rename</button>
+          <button
+            className="w-full px-3 py-1 text-left text-xs text-destructive hover:bg-destructive/10"
+            onClick={async () => { await deleteItem(contextMenuTarget.path); setContextMenuTarget(null) }}
+          >Delete</button>
+        </div>
+      )}
     </div>
   )
 }

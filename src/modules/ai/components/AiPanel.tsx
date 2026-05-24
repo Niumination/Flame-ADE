@@ -21,6 +21,9 @@ export function AiPanel() {
     setModel,
   } = useChatStore()
 
+  const availableModels = useChatStore((s) => s.availableModels)
+  const refreshModels = useChatStore((s) => s.refreshModels)
+
   const [showSettings, setShowSettings] = useState(false)
   const [apiKeyInput, setApiKeyInput] = useState('')
   const [keysLoaded, setKeysLoaded] = useState(false)
@@ -29,7 +32,8 @@ export function AiPanel() {
     if (!keysLoaded) {
       loadAllApiKeys().then(() => setKeysLoaded(true))
     }
-  }, [keysLoaded])
+    refreshModels()
+  }, [keysLoaded, refreshModels])
 
   const activeSession = sessions.find((s) => s.id === activeSessionId)
 
@@ -80,7 +84,10 @@ export function AiPanel() {
               onChange={(e) => setModel(e.target.value)}
               className="bg-muted text-foreground text-xs rounded px-2 py-1 border border-border"
             >
-              {getProvider(provider).models.map((m) => (
+              {(provider === 'opencode-zen' && availableModels.length > 0
+                ? availableModels
+                : getProvider(provider).models
+              ).map((m) => (
                 <option key={m} value={m}>
                   {m}
                 </option>

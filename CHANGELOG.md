@@ -2,6 +2,28 @@
 
 All notable changes to Flame ADE.
 
+## [1.1.0] — 2026-05-24
+
+### Bugfixes 🔧
+- **ApprovalDialog buttons fixed** — `absolute` → `fixed` positioning to escape `overflow: hidden` ancestor clipping
+- **Tool parameter schema fixed** — `wrapParameters()` in `tools.ts` converts flat `{ path: { type, description } }` → JSON Schema `{ type: "object", properties, required }`; `agent-runner.ts` uses `inputSchema: jsonSchema(t.parameters)`
+- **Model list updated** — removed expired models (`minimax-m2.5-free`, `qwen3-coder-480b`); added auto-detect from `GET /v1/models`
+- **Timeouts overhauled** — stream timeout 30s → 120s, approval timeout 30s auto-reject, tool timeout 60s per-tool; `withTimeout()` via `Promise.race`
+- **OpenCode Zen streaming fix** — `cors-fetch.ts` rewritten with `streamViaChannel()` using Tauri `Channel<AiStreamEvent>` + `ReadableStream` for real-time AI streaming
+- **AI CORS bypass** — POST `/chat/completions` uses streaming channel; other requests use buffered `ai_http_request`
+- **OpenCode Zen models auto-detect** — `fetchOpenCodeZenModels()` in `config.ts`, `availableModels` + `refreshModels` in chatStore, model dropdown in AiPanel merges API results
+
+### New Features ✨
+- **File explorer context menu** — right-click on files/folders shows New File, New Folder, Rename, Delete; inline rename/create inputs
+- **FileTree arrow icons** — ▶/▼ toggle arrows for directories for clearer expand/collapse UI
+- **TabBar auto-scroll** — active tab scrolls into view on activation (`scrollIntoView` with `inline: 'nearest'`)
+- **Workspace mutations** — `createItem()`, `renameItem()`, `deleteItem()` in `useWorkspace` store with auto-refresh
+
+### Verification ✅
+- `tsc --noEmit` — 0 errors
+- `pnpm test` — 50/50 passing
+- `cargo check` — 0 warnings
+
 ## [1.2.0] — 2026-05-24
 
 ### Visual Polish & Fixes 🎨

@@ -1,8 +1,12 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { TabBar } from './TabBar'
 import { useTabs } from './useTabs'
 import '@testing-library/jest-dom'
+
+beforeEach(() => {
+  Element.prototype.scrollIntoView = vi.fn() as any
+})
 
 function resetStore() {
   useTabs.setState({ tabs: [], activeTabId: '' })

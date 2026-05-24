@@ -10,7 +10,7 @@ export function ApprovalDialog() {
   const item = pending[0]
 
   return (
-    <div className="absolute inset-0 flex items-end justify-center pb-16 pointer-events-none z-50">
+    <div className="fixed inset-0 flex items-end justify-center pb-16 pointer-events-none z-50">
       <div className="bg-background border border-border rounded-lg shadow-xl p-4 max-w-md w-full mx-4 pointer-events-auto">
         <div className="flex items-center gap-2 mb-2">
           <span className="text-xs font-semibold text-foreground uppercase">⚠️ Approval Required</span>

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { AiProviderId } from '../lib/config'
+import { fetchOpenCodeZenModels } from '../lib/config'
 
 export interface ChatMessage {
   id: string
@@ -25,6 +26,7 @@ interface ChatStore {
   model: string
   apiKeys: Partial<Record<AiProviderId, string>>
   isStreaming: boolean
+  availableModels: string[]
   createSession: (provider?: AiProviderId, model?: string) => string
   deleteSession: (id: string) => void
   setActiveSession: (id: string | null) => void
@@ -35,6 +37,7 @@ interface ChatStore {
   clearMessages: (sessionId: string) => void
   updateLastMessage: (sessionId: string, content: string) => void
   setStreaming: (streaming: boolean) => void
+  refreshModels: () => Promise<void>
 }
 
 let sessionCounter = 0
@@ -46,6 +49,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   model: 'claude-sonnet-4-5',
   apiKeys: {},
   isStreaming: false,
+  availableModels: [],
 
   createSession: (provider?: AiProviderId, model?: string) => {
     sessionCounter++
@@ -129,4 +133,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
 
   setStreaming: (streaming) => set({ isStreaming: streaming }),
+
+  refreshModels: async () => {
+    const models = await fetchOpenCodeZenModels()
+    if (models.length > 0) {
+      set({ availableModels: models })
+    }
+  },
 }))

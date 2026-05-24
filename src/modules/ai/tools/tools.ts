@@ -270,6 +270,26 @@ const LEGACY_TOOLS: ToolDefinition[] = [
   },
 ];
 
+function wrapParameters(raw: Record<string, unknown>): Record<string, unknown> {
+  const properties: Record<string, unknown> = {}
+  const required: string[] = []
+  for (const [key, val] of Object.entries(raw)) {
+    const prop = val as { type: string; description?: string }
+    properties[key] = { type: prop.type, description: prop.description ?? '' }
+    if (!prop.description?.toLowerCase().includes('optional')) {
+      required.push(key)
+    }
+  }
+  return {
+    type: 'object',
+    properties,
+    ...(required.length > 0 ? { required } : {}),
+  } as unknown as Record<string, unknown>
+}
+
 export function getTools(): ToolDefinition[] {
-  return LEGACY_TOOLS;
+  return LEGACY_TOOLS.map((t) => ({
+    ...t,
+    parameters: wrapParameters(t.parameters),
+  }))
 }
