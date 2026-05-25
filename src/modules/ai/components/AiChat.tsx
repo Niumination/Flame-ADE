@@ -34,9 +34,10 @@ export const AiChat = memo(function AiChat({ messages, isStreaming, className }:
         <div key={msg.id} className={cn('flex', msg.role === 'user' ? 'justify-end' : 'justify-start')}>
           <div className={cn(
             'max-w-[85%] rounded-2xl px-4 py-2 text-sm',
+            'transition-shadow duration-200',
             msg.role === 'user'
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-muted/50 text-foreground',
+              ? 'bg-primary/90 text-primary-foreground shadow-sm shadow-primary/20'
+              : 'bg-black/30 backdrop-blur-md border border-white/[0.06] text-foreground shadow-sm',
           )}>
             {msg.role === 'user' ? (
               <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -50,11 +51,11 @@ export const AiChat = memo(function AiChat({ messages, isStreaming, className }:
       ))}
       {isStreaming && (
         <div className="flex justify-start">
-          <div className="rounded-2xl bg-muted/50 px-4 py-2">
+          <div className="rounded-2xl bg-black/30 backdrop-blur-md border border-white/[0.06] px-4 py-2">
             <span className="inline-flex gap-1">
-              <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60" />
-              <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:0.1s]" />
-              <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:0.2s]" />
+              <span className="size-1.5 animate-bounce rounded-full bg-indigo-400/80" />
+              <span className="size-1.5 animate-bounce rounded-full bg-indigo-400/80 [animation-delay:0.1s]" />
+              <span className="size-1.5 animate-bounce rounded-full bg-indigo-400/80 [animation-delay:0.2s]" />
             </span>
           </div>
         </div>

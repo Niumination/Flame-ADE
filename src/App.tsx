@@ -9,7 +9,7 @@ import { ThemeProvider } from './modules/theme'
 import { useTerminalPrefs } from './modules/terminal/lib/useTerminalPrefs'
 import { useWorkspace } from './modules/explorer/lib/useWorkspace'
 import { registerShortcut, matchBinding } from './modules/shortcuts'
-import { SidebarRail, type SidebarViewId } from './modules/sidebar'
+import { SidebarRail, type SidebarViewId, SearchPanel, DebuggerPanel } from './modules/sidebar'
 import { useSourceControl, SourceControlPanel } from './modules/source-control'
 
 const AiPanel = lazy(() => import('./modules/ai').then(m => ({ default: m.AiPanel })))
@@ -145,6 +145,10 @@ function AppContent() {
             <div className="min-h-0 flex-1 overflow-hidden">
               {sidebarView === 'explorer' ? (
                 <ExplorerPanel onFileSelect={handleFileSelect} />
+              ) : sidebarView === 'search' ? (
+                <SearchPanel onFileSelect={handleFileSelect} />
+              ) : sidebarView === 'debugger' ? (
+                <DebuggerPanel />
               ) : (
                 <SourceControlPanel
                   open={true}

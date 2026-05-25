@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { FolderGitTwoIcon, FolderTreeIcon } from "@hugeicons/core-free-icons";
+import { FolderGitTwoIcon, FolderTreeIcon, SearchCodeIcon, Bug01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useChatStore } from "@/modules/ai";
 import type { SidebarViewId } from "./types";
@@ -24,6 +24,8 @@ export function SidebarRail({ activeView, onSelectView, changedCount }: Props) {
 
   const items: RailItem[] = [
     { id: "explorer", label: "Files", icon: FolderTreeIcon },
+    { id: "search", label: "Search", icon: SearchCodeIcon },
+    { id: "debugger", label: "Debugger", icon: Bug01Icon },
     {
       id: "source-control",
       label: "Source Control",

@@ -2,12 +2,14 @@ import { memo } from 'react'
 import { useTabs } from '../tabs'
 import { cn } from '@/lib/utils'
 import { AiStatusBarControls, useChatStore } from '@/modules/ai'
+import { useFpsCounter } from './useFpsCounter'
 
 export const StatusBar = memo(function StatusBar() {
   const tabs = useTabs((s) => s.tabs)
   const activeTabId = useTabs((s) => s.activeTabId)
   const activeTab = tabs.find((t) => t.id === activeTabId)
   const isStreaming = useChatStore((s) => s.isStreaming)
+  const fps = useFpsCounter()
 
   return (
     <footer className="flex h-7 shrink-0 items-center gap-3 border-t border-border/60 bg-card/60 px-3 text-[11px] text-muted-foreground">
@@ -24,6 +26,7 @@ export const StatusBar = memo(function StatusBar() {
           <span className="text-[10px]">{isStreaming ? 'AI Streaming' : 'AI Ready'}</span>
         </span>
         <AiStatusBarControls />
+        <span className="tabular-nums text-[10px] text-muted-foreground/50">{fps}fps</span>
         <span>{tabs.length} tab</span>
         <span className={cn(
           'capitalize',

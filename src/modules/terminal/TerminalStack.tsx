@@ -12,9 +12,11 @@ export function TerminalStack({ cwd, tabId }: TerminalStackProps) {
 
   return (
     <div className="relative h-full w-full">
-      <div ref={containerRef} className="absolute inset-0" />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]">
+        <div ref={containerRef} className="absolute inset-0" />
+      </div>
       {!isReady && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background text-muted-foreground">
+        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
           <span className="text-sm">Starting terminal...</span>
         </div>
       )}

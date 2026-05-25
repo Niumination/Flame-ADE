@@ -1,7 +1,7 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "opencode/claude-sonnet-4-5",
-  "small_model": "opencode/claude-haiku-4-5",
+  "model": "opencode/big-pickle",
+  "small_model": "opencode/deepseek-v4-flash-free",
   "default_agent": "build",
   "autoupdate": true,
   "snapshot": true,
@@ -83,7 +83,7 @@
     "architect": {
       "description": "System architect — designs architecture, module boundaries, and technical decisions for Flame ADE",
       "mode": "subagent",
-      "model": "opencode/claude-sonnet-4-5",
+      "model": "opencode/big-pickle",
       "temperature": 0.2,
       "permission": {
         "edit": "ask",
@@ -93,7 +93,7 @@
     "rust-dev": {
       "description": "Rust backend developer — writes Tauri commands, PTY handling, filesystem ops, security for Flame ADE",
       "mode": "subagent",
-      "model": "opencode/claude-sonnet-4-5",
+      "model": "opencode/big-pickle",
       "temperature": 0.1,
       "permission": {
         "edit": "ask",
@@ -103,7 +103,7 @@
     "frontend-dev": {
       "description": "React/TypeScript frontend developer — builds UI components, terminal integration, state management for Flame ADE",
       "mode": "subagent",
-      "model": "opencode/claude-sonnet-4-5",
+      "model": "opencode/big-pickle",
       "temperature": 0.2,
       "permission": {
         "edit": "ask",
@@ -113,7 +113,7 @@
     "ai-engineer": {
       "description": "AI integration specialist — Vercel AI SDK, agents, tools, voice, sessions for Flame ADE",
       "mode": "subagent",
-      "model": "opencode/claude-sonnet-4-5",
+      "model": "opencode/big-pickle",
       "temperature": 0.3,
       "permission": {
         "edit": "ask",
@@ -123,7 +123,7 @@
     "security-auditor": {
       "description": "Security reviewer — audits code for vulnerabilities, SSRF, path traversal, sandboxing in Flame ADE",
       "mode": "subagent",
-      "model": "opencode/claude-sonnet-4-5",
+      "model": "opencode/big-pickle",
       "temperature": 0.1,
       "permission": {
         "edit": "deny",
@@ -137,7 +137,7 @@
     "qa-tester": {
       "description": "QA engineer — writes tests, runs test suites, verifies functionality for Flame ADE",
       "mode": "subagent",
-      "model": "opencode/claude-sonnet-4-5",
+      "model": "opencode/big-pickle",
       "temperature": 0.1,
       "permission": {
         "edit": "ask",
@@ -147,7 +147,7 @@
     "docs-writer": {
       "description": "Technical writer — creates documentation, README, API docs, user guides for Flame ADE",
       "mode": "subagent",
-      "model": "opencode/claude-haiku-4-5",
+      "model": "opencode/deepseek-v4-flash-free",
       "temperature": 0.4,
       "permission": {
         "edit": "allow",
@@ -157,7 +157,7 @@
     "release-manager": {
       "description": "Release engineer — handles builds, CI/CD, versioning, changelog, packaging for Flame ADE",
       "mode": "subagent",
-      "model": "opencode/claude-sonnet-4-5",
+      "model": "opencode/big-pickle",
       "temperature": 0.1,
       "permission": {
         "edit": "ask",
@@ -291,67 +291,67 @@
       "template": "Start the Flame ADE development server.\nRun: pnpm tauri dev\nEnsure all dependencies are installed first.",
       "description": "Start Tauri dev server",
       "agent": "build",
-      "model": "opencode/claude-haiku-4-5"
+      "model": "opencode/deepseek-v4-flash-free"
     },
     "build": {
       "template": "Build Flame ADE for production.\nRun: pnpm tauri build\nCheck for errors and report build status.",
       "description": "Build production bundle",
       "agent": "build",
-      "model": "opencode/claude-haiku-4-5"
+      "model": "opencode/deepseek-v4-flash-free"
     },
     "test": {
       "template": "Run the full test suite for Flame ADE.\nRun: pnpm test\nReport all failures with details.",
       "description": "Run tests",
       "agent": "qa-tester",
-      "model": "opencode/claude-haiku-4-5"
+      "model": "opencode/deepseek-v4-flash-free"
     },
     "lint": {
       "template": "Run all linting and type checks for Flame ADE.\nFrontend: pnpm exec tsc --noEmit\nRust: cd src-tauri && cargo clippy\nReport all issues.",
       "description": "Run linting and type checks",
       "agent": "qa-tester",
-      "model": "opencode/claude-haiku-4-5"
+      "model": "opencode/deepseek-v4-flash-free"
     },
     "clippy": {
       "template": "Run Rust clippy on the Tauri backend.\ncd src-tauri && cargo clippy -- -D warnings\nFix any warnings or errors.",
       "description": "Run cargo clippy",
       "agent": "rust-dev",
-      "model": "opencode/claude-haiku-4-5"
+      "model": "opencode/deepseek-v4-flash-free"
     },
     "release": {
       "template": "Prepare a new release for Flame ADE.\n1. Check current version in package.json and Cargo.toml\n2. Update CHANGELOG.md with recent changes\n3. Bump version numbers\n4. Create git tag\n5. Build for all platforms",
       "description": "Prepare new release",
       "agent": "release-manager",
-      "model": "opencode/claude-sonnet-4-5"
+      "model": "opencode/big-pickle"
     },
     "audit": {
       "template": "Run security audit on Flame ADE.\nRust: cd src-tauri && cargo audit\nNode: pnpm audit\nReview any vulnerabilities and suggest fixes.",
       "description": "Security audit",
       "agent": "security-auditor",
-      "model": "opencode/claude-sonnet-4-5"
+      "model": "opencode/big-pickle"
     },
     "architect": {
       "template": "Analyze the current architecture of Flame ADE and suggest improvements.\nReview module boundaries, data flow, and performance bottlenecks.\nPropose concrete changes with rationale.",
       "description": "Architecture review",
       "agent": "architect",
-      "model": "opencode/claude-sonnet-4-5"
+      "model": "opencode/big-pickle"
     },
     "next": {
       "template": "Build the next pending task from the Flame ADE development plan.\n\n1. Read PLAN.md and AGENTS.md to find the next unchecked task\n2. Read FLAME.md and ARCHITECTURE.md for context\n3. Implement the task following existing conventions\n4. After implementation:\n   - Run TypeScript check: pnpm exec tsc --noEmit\n   - Run Rust check: cd src-tauri && cargo check\n   - Fix any errors\n5. Update CHANGELOG.md with what was done\n6. Update AGENTS.md implementation status\n7. Update PLAN.md to mark the task as completed\n8. Update FLAME.md implementation status\n9. Report summary of what was accomplished",
       "description": "Build next pending task from plan",
       "agent": "build",
-      "model": "opencode/claude-sonnet-4-5"
+      "model": "opencode/big-pickle"
     },
     "phase": {
       "template": "Build all tasks in the specified phase of Flame ADE.\n\n1. Read PLAN.md to find tasks for the requested phase\n2. For each pending task in order:\n   - Implement the task\n   - Run type checks (tsc --noEmit, cargo check)\n   - Fix errors before moving to next task\n3. After all tasks done:\n   - Update CHANGELOG.md\n   - Update AGENTS.md\n   - Update PLAN.md\n   - Update FLAME.md\n4. Report summary of all completed tasks",
       "description": "Build entire phase (1-5)",
       "agent": "build",
-      "model": "opencode/claude-sonnet-4-5"
+      "model": "opencode/big-pickle"
     },
     "document": {
       "template": "Update all Flame ADE documentation with current progress.\n\n1. Read CHANGELOG.md and compare with actual code state\n2. Update CHANGELOG.md with recent changes\n3. Update AGENTS.md project structure and implementation status\n4. Update FLAME.md implementation status\n5. Update PLAN.md checkbox status\n6. Report what was updated",
       "description": "Update all docs with current progress",
       "agent": "docs-writer",
-      "model": "opencode/claude-haiku-4-5"
+      "model": "opencode/deepseek-v4-flash-free"
     },
     "engon": {
       "template": "Jalankan verifikasi proyek Flame ADE menyeluruh.\n\nGunakan skill engon untuk melakukan pengecekan:\n1. Struktur Rust backend\n2. Struktur frontend React\n3. Kompilasi (cargo check + tsc --noEmit)\n4. Test coverage\n5. Dokumentasi\n6. Dev server readiness\n\nLoad skill engon, breakdown ke sub-agent, lalu hasilkan laporan akhir dengan format:\n╔══════════════════════════════════════╗\n║       Flame ADE — Engon Report       ║\n╠══════════════════════════════════════╣\n║ [area]              [status]  [icon] ║\n╚══════════════════════════════════════╝\n\nSertakan fix command untuk setiap issue.",

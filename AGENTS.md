@@ -184,12 +184,17 @@ flame-ade/
 - [x] 50 TypeScript tests + 85 Rust tests — all passing
 - [x] Zero Rust warnings (cargo check), zero TypeScript errors (tsc --noEmit)
 
-### v1.2.0 — Visual Polish & Auto-start 🎨
+### v1.2.0 — Visual Polish, OpenDesign & Auto-start 🎨
 - [x] Fix: `App.css` not imported — Tailwind v4 `@theme` was never loaded
 - [x] Fix: Dynamic theming broken — `applyTheme.ts` now sets dual CSS vars (`--color-{name}` + `--{name}`)
 - [x] Improved default `@theme` — refined palette with depth hierarchy, indigo primary, sidebar tokens
 - [x] Auto-start toggle — Settings → System → "Launch at login"
 - [x] AgentStatusPill streaming indicator — wired to chatStore `isStreaming`
+- [x] Open-design 132 skills + 152 design systems installed globally
+- [x] Glassmorphism design system — GlassPanel, Terminal/Editor glass, chat bubbles, loading states
+- [x] Sidebar Search & Debugger — new rail items with placeholder panels
+- [x] TabBar motion animations — `motion.div` + `AnimatePresence` with layout animations
+- [x] Footer FPS counter — real-time FPS display via `useFpsCounter`
 - [x] 50 TypeScript tests + 85 Rust tests — all passing
 - [x] Zero Rust warnings, zero TypeScript errors
 

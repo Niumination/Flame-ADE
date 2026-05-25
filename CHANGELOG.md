@@ -24,17 +24,24 @@ All notable changes to Flame ADE.
 - `pnpm test` — 50/50 passing
 - `cargo check` — 0 warnings
 
-## [1.2.0] — 2026-05-24
+## [1.2.0] — 2026-05-25
 
 ### Visual Polish & Fixes 🎨
 - **Fix: `App.css` not imported** — Tailwind v4 `@theme` was never loaded, causing all styling to be unstyled HTML (white background, left-aligned text, no layout).
 - **Fix: Dynamic theming broken for shadcn/ui** — `applyTheme.ts` set CSS vars as `--{name}` format, but Tailwind v4 utility classes resolve to `--color-{name}` format. Now sets **dual** formats (`--color-background` + `--background`) so both Tailwind v4 components and CodeMirror/extensions respond to theme switches.
 - **Improved default `@theme` colors** — Replaced flat `#0a0a0a` with refined palette: indigo primary (`#6366f1`), depth hierarchy (bg `#0c0c0d` → card `#141416` → popover `#1a1a1e`), semi-transparent borders (`rgba(255,255,255,0.06)`), sidebar tokens.
 - **Added missing `@theme` tokens** — `--color-input` (shadcn/ui input fields), `--color-sidebar*` (sidebar rail), `--radius` base.
+- **Glassmorphism design system** — `GlassPanel` component (`bg-black/40 backdrop-blur-xl border-white/10`), applied to Terminal & Editor surfaces, chat bubbles, and loading states.
+- **Chat bubble polish** — Assistant messages use `bg-black/30 backdrop-blur-md border-white/[0.06]` glass styling; user messages use `bg-primary/90` with `shadow-primary/20`; loading dots in indigo.
+- **TabBar motion animations** — `motion.div` + `AnimatePresence` with layout animations (fade-in, slide, scale exit) for smooth tab transitions.
+- **Footer FPS counter** — Real-time FPS display in status bar using `useFpsCounter` hook with `requestAnimationFrame`.
 
 ### Features ✨
-- **Auto-start toggle** — Settings → System → "Launch at login" toggle using `@tauri-apps/plugin-autostart`. All Rust backend infra was already wired (plugin, permissions, capabilities), only frontend UI was missing.
-- **AgentStatusPill streaming indicator** — `isStreaming` state added to `chatStore`, set by `agent-runner.ts` at stream start/end in `try/finally`. `AgentStatusPill` reads from store instead of hardcoded `false`.
+- **Open-design skills integration** — 132 design skills from `nexu-io/open-design` installed globally at `~/.config/opencode/skills/` for use across all OpenCode projects.
+- **152 design systems library** — Brand-grade design systems (Stripe, Linear, Vercel, Apple, etc.) available at `~/.config/opencode/references/design-systems/` as DESIGN.md references.
+- **Sidebar Search & Debugger** — New sidebar rail items with placeholder panels; `SearchPanel` (file search UI) + `DebuggerPanel` (debug session UI).
+- **Auto-start toggle** — Settings → System → "Launch at login" toggle using `@tauri-apps/plugin-autostart`.
+- **AgentStatusPill streaming indicator** — `isStreaming` state in `chatStore`, wired to `AgentStatusPill` and 3D AI core visualizer.
 
 ### Verification ✅
 - `cargo check` — 0 warnings

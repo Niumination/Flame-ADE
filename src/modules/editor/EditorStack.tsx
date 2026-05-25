@@ -45,6 +45,8 @@ export function EditorStack({ path, initialContent = '', className }: EditorStac
   }, [path])
 
   return (
-    <div ref={containerRef} className={`h-full w-full overflow-hidden ${className || ''}`} />
+    <div className="h-full w-full overflow-hidden bg-black/40 backdrop-blur-[2px]">
+      <div ref={containerRef} className={`h-full w-full ${className || ''}`} />
+    </div>
   )
 }

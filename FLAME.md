@@ -43,6 +43,9 @@ Flame ADE is a fork of Terax AI with specific modifications. To simplify syncing
 | P15 | `src/modules/settings/SettingsPanel.tsx` | Auto-start toggle (Launch at login) | Terax AI belum punya feature ini | 2026-05-24 |
 | P16 | `src/modules/ai/store/chatStore.ts`, `agent-runner.ts`, `AgentStatusPill.tsx` | AgentStatusPill `isStreaming` wiring — read from chatStore instead of hardcoded false | Fitur baru, tidak ada di Terax AI — streaming state sebelumnya hardcoded | 2026-05-24 |
 | P17 | `src/App.css` | Improved default `@theme` palette — depth hierarchy, indigo primary, semi-transparent borders, sidebar tokens | Default styling Terax AI juga flat, tapi kita upgrade biar lebih refined sebagai stand-alone project | 2026-05-24 |
+| P18 | `~/.config/opencode/skills/` | 132 skills dari `nexu-io/open-design` di-copy ke global OpenCode skills | Fitur baru — OpenDesign integration sebagai skill library global, bukan spesifik Flame ADE | 2026-05-25 |
+| P19 | `~/.config/opencode/references/design-systems/` | 152 brand-grade design systems (Stripe, Linear, Vercel, Apple, dll) sebagai referensi | Fitur baru — agent dapat membaca DESIGN.md untuk referensi brand | 2026-05-25 |
+| P20 | `src/modules/sidebar/types.ts`, `SearchPanel.tsx`, `DebuggerPanel.tsx`, `TerminalStack.tsx`, `EditorStack.tsx`, `AiChat.tsx`, `TabBar.tsx`, `StatusBar.tsx` | Glassmorphism visual polish: Search/Debugger sidebar items, glass Terminal/Editor, chat bubble glass, TabBar motion, FPS counter | Fitur original Flame ADE — visual upgrades beyond Terax AI baseline | 2026-05-25 |
 
 ### Catatan Migrasi
 - **P4-P6**: Jika suatu saat Flame ADE di-port ke Linux/Windows, referensi dari Terax ada di file platform-specific.

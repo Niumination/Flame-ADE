@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, memo, useCallback } from 'react'
+import { motion, AnimatePresence } from 'motion/react'
 import { useTabs, type Tab } from './useTabs'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -112,11 +113,21 @@ export const TabBar = memo(function TabBar() {
     <div className="flex items-end gap-0.5 px-2 pt-1 overflow-x-auto"
       onDragOver={handleDragOver}
     >
-      {tabs.map((tab, i) => (
-        <div key={tab.id} onDrop={(e) => handleDrop(e, i)}>
-          <TabItem tab={tab} isActive={tab.id === activeTabId} />
-        </div>
-      ))}
+      <AnimatePresence mode="popLayout">
+        {tabs.map((tab, i) => (
+          <motion.div
+            key={tab.id}
+            layout
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+            onDrop={(e) => handleDrop(e, i)}
+          >
+            <TabItem tab={tab} isActive={tab.id === activeTabId} />
+          </motion.div>
+        ))}
+      </AnimatePresence>
       <Button
         variant="ghost"
         size="sm"
