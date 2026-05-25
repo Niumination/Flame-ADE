@@ -1,17 +1,21 @@
 import { cn } from "@/lib/utils";
-import { FolderGitTwoIcon, FolderTreeIcon, SearchCodeIcon, Bug01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useChatStore } from "@/modules/ai";
 import type { SidebarViewId } from "./types";
 
-export const SIDEBAR_RAIL_HEIGHT = 36;
+const ITEMS: { id: SidebarViewId; label: string; icon: string; badge?: () => number }[] = [
+  { id: "explorer",      label: "Explorer",      icon: "📁" },
+  { id: "search",        label: "Search",        icon: "🔍" },
+  { id: "source-control", label: "Source Control", icon: "⎇", badge: () => 0 },
+  { id: "git-history",   label: "Git History",   icon: "🕐" },
+  { id: "preview",       label: "Web Preview",   icon: "🌐" },
+  { id: "markdown",      label: "Markdown",      icon: "📝" },
+];
 
-type RailItem = {
-  id: SidebarViewId;
-  label: string;
-  icon: Parameters<typeof HugeiconsIcon>[0]["icon"];
-  badge?: number;
-};
+const BOTTOM_ITEMS: { id: SidebarViewId; label: string; icon: string }[] = [
+  { id: "extensions", label: "Extensions", icon: "🧩" },
+  { id: "settings",   label: "Settings",   icon: "⚙" },
+  { id: "account",    label: "Account",    icon: "👤" },
+];
 
 type Props = {
   activeView: SidebarViewId;
@@ -22,26 +26,16 @@ type Props = {
 export function SidebarRail({ activeView, onSelectView, changedCount }: Props) {
   const isStreaming = useChatStore((s) => s.isStreaming)
 
-  const items: RailItem[] = [
-    { id: "explorer", label: "Files", icon: FolderTreeIcon },
-    { id: "search", label: "Search", icon: SearchCodeIcon },
-    { id: "debugger", label: "Debugger", icon: Bug01Icon },
-    {
-      id: "source-control",
-      label: "Source Control",
-      icon: FolderGitTwoIcon,
-      badge: changedCount,
-    },
-  ];
+  const getBadge = (item: typeof ITEMS[number]): number | null => {
+    if (item.id === "source-control") return changedCount;
+    return null;
+  };
 
   return (
-    <div
-      style={{ height: SIDEBAR_RAIL_HEIGHT }}
-      className="flex shrink-0 items-stretch gap-1 border-t border-border/60 bg-card/85 px-1.5 py-1 backdrop-blur"
-    >
-      {items.map((item) => {
+    <aside className="flex w-[48px] shrink-0 flex-col items-center gap-1 border-r border-sidebar-border bg-sidebar py-2 select-none">
+      {ITEMS.map((item) => {
         const isActive = item.id === activeView;
-        const showBadge = !!item.badge && item.badge > 0;
+        const badge = getBadge(item);
         return (
           <button
             key={item.id}
@@ -50,32 +44,57 @@ export function SidebarRail({ activeView, onSelectView, changedCount }: Props) {
             aria-pressed={isActive}
             onClick={() => onSelectView(item.id)}
             className={cn(
-              "group relative flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md text-[11px] font-medium outline-none transition-colors duration-150",
-              "focus-visible:ring-2 focus-visible:ring-primary/40",
-              isActive
-                ? "bg-foreground/[0.07] text-foreground dark:bg-foreground/[0.09]"
-                : "text-muted-foreground hover:bg-foreground/[0.045] hover:text-foreground",
+              "relative flex size-9 cursor-pointer items-center justify-center rounded-lg text-sm outline-none transition-all duration-150",
+              "hover:bg-sidebar-accent/50",
+              isActive && "bg-sidebar-accent",
             )}
+            title={item.label}
           >
-            <HugeiconsIcon
-              icon={item.icon}
-              size={14}
-              strokeWidth={isActive ? 2 : 1.75}
-              className="shrink-0 transition-[stroke-width] duration-150"
-            />
-            <span>{item.label}</span>
-            {showBadge ? (
-              <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full border border-border/60 bg-card px-1 text-[9px] font-semibold leading-none tabular-nums text-muted-foreground/95">
-                {item.badge! > 99 ? "99+" : item.badge}
+            {/* Active flame bar */}
+            {isActive && (
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-full bg-gradient-to-b from-[#ff6a00] to-[#ff9f45]" />
+            )}
+            <span>{item.icon}</span>
+            {badge != null && badge > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 flex size-3.5 items-center justify-center rounded-full bg-[#ff6a00] text-[7px] font-bold text-white shadow-[0_0_6px_rgba(255,106,0,0.5)]">
+                {badge > 9 ? '9+' : badge}
               </span>
-            ) : null}
+            )}
           </button>
         );
       })}
-      <div className="flex items-center gap-1.5 border-l border-border/40 pl-2 ml-1">
+
+      {/* Spacer */}
+      <div className="mt-auto" />
+
+      {/* AI status indicator */}
+      <div className="flex items-center gap-1 mb-0.5">
         <span className={cn('inline-block size-1.5 rounded-full', isStreaming ? 'bg-indigo-500 animate-pulse' : 'bg-green-500')} />
-        <span className="text-[9px] text-muted-foreground uppercase tracking-wider">{isStreaming ? 'AI' : 'Ready'}</span>
       </div>
-    </div>
+
+      {BOTTOM_ITEMS.map((item) => {
+        const isActive = item.id === activeView;
+        return (
+          <button
+            key={item.id}
+            type="button"
+            aria-label={item.label}
+            aria-pressed={isActive}
+            onClick={() => onSelectView(item.id)}
+            className={cn(
+              "relative flex size-9 cursor-pointer items-center justify-center rounded-lg text-sm outline-none transition-all duration-150",
+              "hover:bg-sidebar-accent/50",
+              isActive && "bg-sidebar-accent",
+            )}
+            title={item.label}
+          >
+            {isActive && (
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-full bg-gradient-to-b from-[#ff6a00] to-[#ff9f45]" />
+            )}
+            <span>{item.icon}</span>
+          </button>
+        );
+      })}
+    </aside>
   );
 }

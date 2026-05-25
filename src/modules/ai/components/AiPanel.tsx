@@ -1,15 +1,22 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useChatStore } from '../store/chatStore'
+import { useAiWindowStore } from '../store/aiWindowStore'
 import { AI_PROVIDERS, getProvider } from '../lib/config'
 import { saveApiKey, loadAllApiKeys } from '../lib/keychain'
 import { runAgentStream } from '../lib/agent-runner'
 import { findSkill } from '../lib/skills'
 import { ApprovalDialog } from './ApprovalDialog'
 import { AiInputBar } from './AiInputBar'
-import { AiCoreVisualizer } from './AiCoreVisualizer'
+import { AiCssVisualizer } from './AiCssVisualizer'
+import { AiChat } from './AiChat'
+import { saveToStore } from '../store/chatStore'
 import type { AiProviderId } from '../lib/config'
 
-export function AiPanel() {
+type AiPanelProps = {
+  detached?: boolean
+}
+
+export function AiPanel({ detached }: AiPanelProps = {}) {
   const {
     sessions,
     activeSessionId,
@@ -24,6 +31,7 @@ export function AiPanel() {
 
   const availableModels = useChatStore((s) => s.availableModels)
   const refreshModels = useChatStore((s) => s.refreshModels)
+  const setMode = useAiWindowStore((s) => s.setMode)
 
   const [showSettings, setShowSettings] = useState(false)
   const [apiKeyInput, setApiKeyInput] = useState('')
@@ -38,23 +46,71 @@ export function AiPanel() {
 
   const activeSession = sessions.find((s) => s.id === activeSessionId)
 
+  const handleDetach = async () => {
+    await saveToStore()
+    try {
+      const { WebviewWindow } = await import('@tauri-apps/api/webviewWindow')
+      const webview = new WebviewWindow('ai-chat', {
+        url: '/',
+        width: 420,
+        height: 600,
+        minWidth: 320,
+        minHeight: 400,
+        title: 'Flame AI',
+      })
+      webview.once('tauri://created', () => {
+        useAiWindowStore.getState().setDetached('ai-chat')
+      })
+      webview.once('tauri://error', () => {
+        setMode('side-panel')
+      })
+    } catch {
+      setMode('side-panel')
+    }
+  }
+
   return (
     <div className="flex h-full flex-col bg-background border-l border-border">
-      <div className="flex items-center justify-between px-3 py-2 border-b border-border">
-        <span className="text-xs font-semibold text-foreground">AI</span>
-        <div className="flex gap-1">
-          <button
-            onClick={() => {
-              createSession()
-              setShowSettings(false)
-            }}
-            className="text-xs text-muted-foreground hover:text-foreground px-1"
-          >
-            + New
-          </button>
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
+        <span className="text-sm">🔥</span>
+        <span
+          className="text-xs font-semibold"
+          style={{
+            background: 'linear-gradient(90deg, #ff9f45, #6c7cff)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}
+        >
+          Flame AI
+        </span>
+        <button
+          onClick={() => { createSession(); setShowSettings(false) }}
+          className="text-[10px] text-muted-foreground hover:text-foreground px-1"
+        >
+          + New
+        </button>
+        <div className="ml-auto flex gap-0.5">
+          {!detached && (
+            <button
+              onClick={() => setMode('floating')}
+              className="text-[10px] text-muted-foreground hover:text-foreground px-1 rounded"
+              title="Switch to popup"
+            >
+              ⊞
+            </button>
+          )}
+          {!detached && (
+            <button
+              onClick={handleDetach}
+              className="text-[10px] text-muted-foreground hover:text-foreground px-1 rounded"
+              title="Detach to separate window"
+            >
+              ⛶
+            </button>
+          )}
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className="text-xs text-muted-foreground hover:text-foreground px-1"
+            className="text-[10px] text-muted-foreground hover:text-foreground px-1 rounded"
           >
             {showSettings ? 'Chat' : 'Settings'}
           </button>
@@ -132,7 +188,7 @@ export function AiPanel() {
         </div>
       ) : (
         <div className="flex-1 flex flex-col overflow-hidden">
-          <AiCoreVisualizer />
+          <AiCssVisualizer />
           {sessions.length === 0 ? (
             <div className="flex-1 flex items-center justify-center text-muted-foreground px-4 text-center">
               <div className="flex flex-col gap-2">
@@ -186,11 +242,6 @@ function ChatView({ sessionId }: { sessionId: string }) {
   const model = useChatStore((s) => s.model)
   const apiKeys = useChatStore((s) => s.apiKeys)
   const [isLoading, setIsLoading] = useState(false)
-  const endRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [session?.messages])
 
   const handleSend = async (message: string) => {
     if (!message.trim() || !session) return
@@ -251,39 +302,13 @@ function ChatView({ sessionId }: { sessionId: string }) {
 
   if (!session) return null
 
+  const isStreaming = useChatStore((s) => s.isStreaming)
+
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-auto px-3 py-2 space-y-2">
-        {session.messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`max-w-[80%] rounded-lg px-3 py-1.5 text-xs ${
-                msg.role === 'user'
-                  ? 'bg-primary text-white'
-                  : 'bg-muted text-foreground'
-              }`}
-            >
-              <div className="whitespace-pre-wrap break-words">{msg.content}</div>
-            </div>
-          </div>
-        ))}
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-muted text-foreground rounded-lg px-3 py-2 text-xs">
-              <div className="flex gap-1">
-                <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" />
-                <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.1s]" />
-                <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.2s]" />
-              </div>
-            </div>
-          </div>
-        )}
-        <div ref={endRef} />
+      <div className="flex-1 overflow-auto">
+        <AiChat messages={session.messages} isStreaming={isStreaming} />
       </div>
-
       <AiInputBar
         onSend={handleSend}
         onStop={() => setIsLoading(false)}

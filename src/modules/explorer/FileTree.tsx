@@ -8,9 +8,11 @@ interface FileTreeProps {
   onSelect: (entry: FileEntry) => void
   selectedPath?: string
   onContextMenu?: (e: React.MouseEvent, entry: FileEntry) => void
+  modifiedPaths?: Set<string>
+  newPaths?: Set<string>
 }
 
-export function FileTree({ entries, expandedDirs, onToggleDir, onSelect, selectedPath, onContextMenu }: FileTreeProps) {
+export function FileTree({ entries, expandedDirs, onToggleDir, onSelect, selectedPath, onContextMenu, modifiedPaths, newPaths }: FileTreeProps) {
   return (
     <div className="select-none text-sm">
       {entries.map((entry) => (
@@ -23,6 +25,8 @@ export function FileTree({ entries, expandedDirs, onToggleDir, onSelect, selecte
           selectedPath={selectedPath}
           depth={0}
           onContextMenu={onContextMenu}
+          modifiedPaths={modifiedPaths}
+          newPaths={newPaths}
         />
       ))}
     </div>
@@ -37,19 +41,23 @@ interface FileTreeNodeProps {
   selectedPath?: string
   depth: number
   onContextMenu?: (e: React.MouseEvent, entry: FileEntry) => void
+  modifiedPaths?: Set<string>
+  newPaths?: Set<string>
 }
 
-function FileTreeNode({ entry, expandedDirs, onToggleDir, onSelect, selectedPath, depth, onContextMenu }: FileTreeNodeProps) {
+function FileTreeNode({ entry, expandedDirs, onToggleDir, onSelect, selectedPath, depth, onContextMenu, modifiedPaths, newPaths }: FileTreeNodeProps) {
   const isExpanded = expandedDirs.has(entry.path)
   const isSelected = selectedPath === entry.path
   const isDirectory = entry.kind === 'directory'
+  const isModified = modifiedPaths?.has(entry.path)
+  const isNew = newPaths?.has(entry.path)
 
   return (
     <div>
       <div
         className={`flex items-center gap-1.5 px-2 py-0.5 cursor-pointer hover:bg-muted/50 transition-colors ${
           isSelected ? 'bg-muted text-foreground' : 'text-muted-foreground'
-        }`}
+        } ${isModified ? 'ft-item modified' : ''} ${isNew ? 'ft-item new-file' : ''}`}
         style={{ paddingLeft: `${depth * 12 + 8}px` }}
         onClick={() => {
           if (isDirectory) {
@@ -66,7 +74,7 @@ function FileTreeNode({ entry, expandedDirs, onToggleDir, onSelect, selectedPath
           </span>
         )}
         <span className="text-xs">{getFileIcon(entry.kind, entry.name)}</span>
-        <span className="truncate">{entry.name}</span>
+        <span className="truncate flex-1">{entry.name}</span>
       </div>
       {isDirectory && isExpanded && entry.children && (
         <div>
@@ -80,6 +88,8 @@ function FileTreeNode({ entry, expandedDirs, onToggleDir, onSelect, selectedPath
               selectedPath={selectedPath}
               depth={depth + 1}
               onContextMenu={onContextMenu}
+              modifiedPaths={modifiedPaths}
+              newPaths={newPaths}
             />
           ))}
         </div>

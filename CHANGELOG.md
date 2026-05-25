@@ -24,6 +24,30 @@ All notable changes to Flame ADE.
 - `pnpm test` — 50/50 passing
 - `cargo check` — 0 warnings
 
+## [1.3.0] — 2026-05-25
+
+### Visual Polish & Design Token Audit 🎨
+- **Design token audit** — `App.css @theme` diselaraskan dengan mockup: bg `#0a0a0f`, surface `#14141f`, raised `#1e1e2e`, border `#2a2a3e`, primary `#4338ca`. Update radius (6px), layout dimensi (header 44px, statusbar 28px, explorer 240px, AI panel 320px).
+- **`DESIGN.md` sync** — Dark mode surface hierarchy, screen anatomy, component tokens, accessibility contrast ratios diperbarui sesuai implementasi aktual.
+- **Hardcoded colors → CSS vars** — 25+ komponen: SidebarRail, Header, StatusBar, App.tsx, TerminalStack, EditorStack, ExplorerPanel, AiChatPopup, AiInputBar, ApprovalDialog, AiFloatingBubble, AiCssVisualizer — semuanya sekarang pake `var(--color-*)` atau Tailwind theme classes.
+- **ApprovalDialog warna** — Bg/kode block/timer bar pake theme tokens; button approve/reject pake `var(--color-green)` / `var(--color-red)` via `color-mix()`.
+- **ExplorerPanel context menu** — Hardcoded `#1e2333` → `bg-popover`, border/text/hover pake Tailwind theme classes.
+- **Glassmorphism polish** — `GlassPanel` pake `color-mix(in srgb, var(--color-base) 70%, transparent)`, chat bubble glass pake `backdrop-blur-sm` + theme-aware colors.
+- **Terminal/Editor glass** — `backdrop-blur-sm` + `color-mix()` for transparent surface overlay.
+- **agent-browser setup** — Screenshot verification of Vite dev server via agent-browser CLI.
+
+### Fixes 🔧
+- **Color palette alignment** — Green `#3ddc84` → `#22c55e`, Red `#ff5f5f` → `#ef4444`, Yellow `#f5c842` → `#f59e0b`, Cyan `#3dcddc` → `#3b82f6`, Indigo `#6c7cff` → `#4338ca`.
+- **Text colors updated** — Primary `#e8eaf0` → `#e4e4f0`, Secondary `#8890a8` → `#8888a0`, Muted `#4e5470` → `#555570`.
+- **Header height** 38px → 44px, **statusbar height** 22px → 28px.
+
+### Verification ✅
+- `cargo check` — 0 warnings
+- `cargo clippy` — 0 warnings
+- `tsc --noEmit` — 0 errors
+- `pnpm test` — 50/50 passing
+- `cargo test` — 17/17 passing
+
 ## [1.2.0] — 2026-05-25
 
 ### Visual Polish & Fixes 🎨

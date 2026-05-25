@@ -57,7 +57,7 @@ function TabItem({ tab, isActive }: { tab: Tab; isActive: boolean }) {
         onContextMenu={(e) => { e.preventDefault(); setShowMenu(true) }}
         title={tab.cwd || tab.label}
       >
-        <span className="text-[10px] opacity-70">{tab.icon}</span>
+        <span className={`tab-dot ${tab.kind}`} />
         <span className="truncate max-w-28">{tab.label}</span>
         <button
           className="ml-0.5 rounded p-0.5 opacity-0 group-hover:opacity-100 hover:bg-muted-foreground/20 transition-opacity text-xs"

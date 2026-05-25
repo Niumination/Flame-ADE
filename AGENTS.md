@@ -198,6 +198,16 @@ flame-ade/
 - [x] 50 TypeScript tests + 85 Rust tests — all passing
 - [x] Zero Rust warnings, zero TypeScript errors
 
+### v1.3.0 — Design Token Audit & Visual Polish 🎨
+- [x] Design token audit — diselaraskan dengan mockup (bg `#0a0a0f`, surface `#14141f`, primary `#4338ca`)
+- [x] Hardcoded colors → CSS vars di 25+ komponen
+- [x] ApprovalDialog, ExplorerPanel, AiChatPopup, AiFloatingBubble, AiCssVisualizer — theme-aware
+- [x] Glassmorphism polish — `GlassPanel` + Terminal/Editor glass pake `color-mix()` theme-aware
+- [x] `DESIGN.md` sync — layout dimensi, surface hierarchy, contrast ratios
+- [x] agent-browser setup — CLI verification via screenshot
+- [x] `cargo check` — 0 warnings, `cargo clippy` — 0 warnings
+- [x] `tsc --noEmit` — 0 errors, `pnpm test` — 50/50 passing, `cargo test` — 17/17 passing
+
 ## Key Decisions
 1. **macOS Tahoe first** — test and optimize for macOS 26.5 before other platforms
 2. **Intel Mac optimized** — ensure smooth performance on 10th gen Intel CPUs

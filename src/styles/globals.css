@@ -63,3 +63,139 @@ input, textarea, [contenteditable] {
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
+
+@keyframes cssSphereSpin {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes cssSpherePulse {
+  0%, 100% { box-shadow: 0 0 30px rgba(255,106,0,0.4), 0 0 60px rgba(108,124,255,0.2); }
+  50% { box-shadow: 0 0 50px rgba(255,106,0,0.7), 0 0 90px rgba(108,124,255,0.4); }
+}
+
+@keyframes cssParticleFloat {
+  0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
+  50% { transform: translateY(-20px) translateX(10px); opacity: 0.8; }
+}
+
+@keyframes cssPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+@keyframes dialogSlideUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes cssBounce {
+  from { transform: translateY(0); opacity: 0.5; }
+  to { transform: translateY(-6px); opacity: 1; }
+}
+
+/* ───── APP SHELL GLOW ───── */
+.app-shell::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--flame-1, #ff6a00), var(--flame-2, #ff9f45), var(--flame-1, #ff6a00), transparent);
+  opacity: 0.7;
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* ───── CONTEXT MENU ───── */
+.ctx-menu {
+  animation: ctxIn 0.15s ease;
+}
+@keyframes ctxIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ───── STREAMING DOTS ───── */
+.streaming-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--flame-2, #ff9f45);
+  animation: dotBounce 0.8s ease-in-out infinite alternate;
+}
+.streaming-dot:nth-child(2) { animation-delay: 0.15s; }
+.streaming-dot:nth-child(3) { animation-delay: 0.3s; }
+@keyframes dotBounce {
+  from { transform: translateY(0); opacity: 0.5; }
+  to { transform: translateY(-6px); opacity: 1; }
+}
+
+/* ───── TERMINAL COLORS ───── */
+.term-prompt { color: var(--flame-1, #ff6a00); }
+.term-dir { color: var(--cyan, #3dcddc); }
+.term-git { color: var(--indigo, #6c7cff); }
+.term-cmd { color: var(--text-primary, #e8eaf0); }
+.term-out { color: var(--text-secondary, #8890a8); }
+.term-success { color: var(--green, #3ddc84); }
+.term-highlight {
+  background: rgba(255, 106, 0, 0.06);
+  border-left: 2px solid var(--flame-1, #ff6a00);
+  padding: 4px 8px;
+  margin: 2px 0;
+  border-radius: 3px;
+  display: block;
+}
+.term-ai {
+  color: var(--flame-2, #ff9f45);
+  font-weight: 600;
+}
+.term-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 14px;
+  background: var(--flame-1, #ff6a00);
+  animation: cursor-blink 1s step-end infinite;
+  vertical-align: text-bottom;
+  margin-left: 1px;
+}
+.term-line { display: block; line-height: 1.6; }
+
+/* ───── STATUS BADGES ───── */
+.ft-item.modified::after {
+  content: 'M';
+  font-size: 9px;
+  margin-left: auto;
+  color: var(--yellow, #f5c842);
+  padding: 0 3px;
+  border-radius: 3px;
+  background: rgba(245, 200, 66, 0.15);
+}
+.ft-item.new-file::after {
+  content: 'U';
+  font-size: 9px;
+  margin-left: auto;
+  color: var(--green, #3ddc84);
+  padding: 0 3px;
+  border-radius: 3px;
+  background: rgba(61, 220, 132, 0.15);
+}
+
+/* ───── TAB COLOR DOTS ───── */
+.tab-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.tab-dot.terminal { background: var(--green, #3ddc84); }
+.tab-dot.editor { background: var(--cyan, #3dcddc); }
+.tab-dot.git { background: var(--yellow, #f5c842); }
+.tab-dot.preview { background: var(--indigo, #6c7cff); }
+.tab-dot.settings { background: var(--text-muted, #4e5470); }
+.tab-dot.git-history { background: var(--indigo, #6c7cff); }
+.tab-dot.markdown { background: var(--text-muted, #4e5470); }
+.tab-dot.ai-diff { background: var(--flame-2, #ff9f45); }

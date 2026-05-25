@@ -252,30 +252,45 @@ export function ExplorerPanel({ onFileSelect }: ExplorerPanelProps) {
       {contextMenuTarget && (
         <div
           ref={contextMenuRef}
-          className="fixed z-50 min-w-[140px] rounded-md border border-border bg-popover py-1 shadow-lg"
+          className="ctx-menu fixed z-50 min-w-[160px] rounded-lg border border-border bg-popover py-1 shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
           style={{ left: contextMenuPos.x, top: contextMenuPos.y }}
         >
           {contextMenuTarget.kind === 'directory' && (
             <>
               <button
-                className="w-full px-3 py-1 text-left text-xs text-popover-foreground hover:bg-muted/50"
+                className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[11.5px] text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
                 onClick={() => { setCreatingIn({ parent: contextMenuTarget.path, kind: 'file' }); setContextMenuTarget(null) }}
-              >New File</button>
+              >
+                <span>📄</span> New File <span className="ml-auto text-[10px] text-muted-foreground/70">⌘N</span>
+              </button>
               <button
-                className="w-full px-3 py-1 text-left text-xs text-popover-foreground hover:bg-muted/50"
+                className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[11.5px] text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
                 onClick={() => { setCreatingIn({ parent: contextMenuTarget.path, kind: 'directory' }); setContextMenuTarget(null) }}
-              >New Folder</button>
-              <div className="border-t border-border my-1" />
+              >
+                <span>📁</span> New Folder
+              </button>
+              <div className="h-px bg-border my-1" />
             </>
           )}
           <button
-            className="w-full px-3 py-1 text-left text-xs text-popover-foreground hover:bg-muted/50"
+            className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[11.5px] text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
             onClick={() => handleRenameStart(contextMenuTarget)}
-          >Rename</button>
+          >
+            <span>✏️</span> Rename <span className="ml-auto text-[10px] text-muted-foreground/70">F2</span>
+          </button>
           <button
-            className="w-full px-3 py-1 text-left text-xs text-destructive hover:bg-destructive/10"
+            className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[11.5px] text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
+            onClick={() => { navigator.clipboard.writeText(contextMenuTarget.path); setContextMenuTarget(null) }}
+          >
+            <span>📋</span> Copy Path <span className="ml-auto text-[10px] text-muted-foreground/70">⌥⌘C</span>
+          </button>
+          <div className="h-px bg-border my-1" />
+          <button
+            className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[11.5px] text-destructive hover:bg-destructive/10 transition-colors"
             onClick={async () => { await deleteItem(contextMenuTarget.path); setContextMenuTarget(null) }}
-          >Delete</button>
+          >
+            <span>🗑️</span> Delete <span className="ml-auto text-[10px] text-muted-foreground/70">⌫</span>
+          </button>
         </div>
       )}
     </div>

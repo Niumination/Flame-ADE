@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef, lazy, Suspense } from 'react'
 import { homeDir as getHomeDir } from '@tauri-apps/api/path'
+import { isTauri } from '@tauri-apps/api/core'
 import { useTabs, TabBar } from './modules/tabs'
 import { TerminalStack } from './modules/terminal'
 import { EditorStack } from './modules/editor'
@@ -11,6 +12,8 @@ import { useWorkspace } from './modules/explorer/lib/useWorkspace'
 import { registerShortcut, matchBinding } from './modules/shortcuts'
 import { SidebarRail, type SidebarViewId, SearchPanel, DebuggerPanel } from './modules/sidebar'
 import { useSourceControl, SourceControlPanel } from './modules/source-control'
+import { useAiWindowStore, AiFloatingBubble, AiChatPopup } from './modules/ai'
+import { loadFromStore } from './modules/ai/store/chatStore'
 
 const AiPanel = lazy(() => import('./modules/ai').then(m => ({ default: m.AiPanel })))
 const AiDiffPanel = lazy(() => import('./modules/ai').then(m => ({ default: m.AiDiffPanel })))
@@ -21,21 +24,41 @@ const SettingsPanel = lazy(() => import('./modules/settings').then(m => ({ defau
 const MarkdownPreviewPane = lazy(() => import('./modules/markdown').then(m => ({ default: m.MarkdownPreviewPane })))
 const GitHistoryStack = lazy(() => import('./modules/git-history').then(m => ({ default: m.GitHistoryStack })))
 
+
 function AppContent() {
   const tabs = useTabs((s) => s.tabs)
   const activeTabId = useTabs((s) => s.activeTabId)
   const addTab = useTabs((s) => s.addTab)
   const [homeDir, setHomeDir] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [sidebarView, setSidebarView] = useState<SidebarViewId>('explorer')
-  const [showAi, setShowAi] = useState(false)
+  const workspacePath = useWorkspace((s) => s.workspacePath)
+  const pickAndSetWorkspace = useWorkspace((s) => s.pickAndSetWorkspace)
   const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({})
   const fileContents = useRef<Map<string, string>>(new Map())
   const loadTerminalApps = useTerminalPrefs((s) => s.loadApps)
-  const workspacePath = useWorkspace((s) => s.workspacePath)
-  const pickAndSetWorkspace = useWorkspace((s) => s.pickAndSetWorkspace)
+  const [sidebarView, setSidebarViewState] = useState<SidebarViewId>('explorer')
+  const setSidebarView = useCallback((view: SidebarViewId) => {
+    if (view === 'git-history') {
+      addTab({ kind: 'git-history', label: 'Git History', cwd: workspacePath || homeDir })
+      return
+    }
+    if (view === 'preview') {
+      addTab({ kind: 'preview', label: 'Preview', cwd: 'http://localhost:3000' })
+      return
+    }
+    if (view === 'markdown') {
+      addTab({ kind: 'markdown', label: 'Markdown' })
+      return
+    }
+    if (view === 'settings') {
+      addTab({ kind: 'settings', label: 'Settings' })
+      return
+    }
+    setSidebarViewState(view)
+  }, [workspacePath, homeDir, addTab])
   const scm = useSourceControl(workspacePath || homeDir)
-
+  const aiMode = useAiWindowStore((s) => s.mode)
+  const setAiMode = useAiWindowStore((s) => s.setMode)
   useEffect(() => {
     addTab({ kind: 'terminal', label: 'Terminal 1' })
     getHomeDir().then(setHomeDir).catch(() => setHomeDir('/'))
@@ -47,7 +70,7 @@ function AppContent() {
 
     unregisters.push(registerShortcut({
       key: 'i', meta: true, description: 'Toggle AI panel',
-      handler: () => setShowAi((p) => !p),
+      handler: () => setAiMode(aiMode === 'hidden' ? 'floating' : 'hidden'),
     }))
 
     unregisters.push(registerShortcut({
@@ -111,7 +134,7 @@ function AppContent() {
       window.removeEventListener('keydown', handler)
       unregisters.forEach((u) => u())
     }
-  }, [])
+  }, [aiMode])
 
   const handleFileSelect = useCallback(async (path: string) => {
     const fileName = path.split(/[\\/]/).pop() || path
@@ -130,46 +153,88 @@ function AppContent() {
     }
   }, [tabs, addTab])
 
+  // Re-attach listener for detached window
+  const unlistenRef = useRef<(() => void) | null>(null)
+  useEffect(() => {
+    if (aiMode === 'detached' && isTauri()) {
+      import('@tauri-apps/api/event').then(({ listen }) => {
+        listen('re-attach-ai', async () => {
+          await loadFromStore()
+          setAiMode('floating')
+        }).then((fn) => { unlistenRef.current = fn })
+      })
+      return () => {
+        unlistenRef.current?.()
+        unlistenRef.current = null
+      }
+    }
+  }, [aiMode])
+
   return (
-    <main className="flex h-screen w-screen flex-col bg-background text-foreground">
+    <main className="app-shell flex h-screen w-screen flex-col bg-background text-foreground relative">
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/15 via-transparent to-transparent pointer-events-none" />
       <Header
         showExplorer={sidebarOpen}
         onToggleExplorer={() => setSidebarOpen((p) => !p)}
-        showAi={showAi}
-        onToggleAi={() => setShowAi((p) => !p)}
+        showAi={aiMode !== 'hidden'}
+        onToggleAi={() => setAiMode(aiMode === 'hidden' ? 'floating' : 'hidden')}
       />
       <TabBar />
       <div className="flex flex-1 overflow-hidden">
         {sidebarOpen && (
-          <div className="flex w-56 flex-shrink-0 flex-col border-r border-border">
-            <div className="min-h-0 flex-1 overflow-hidden">
-              {sidebarView === 'explorer' ? (
-                <ExplorerPanel onFileSelect={handleFileSelect} />
-              ) : sidebarView === 'search' ? (
-                <SearchPanel onFileSelect={handleFileSelect} />
-              ) : sidebarView === 'debugger' ? (
-                <DebuggerPanel />
-              ) : (
-                <SourceControlPanel
-                  open={true}
-                  sourceControl={scm}
-                  onOpenDiff={(input) => handleFileSelect(input.path)}
-                  onOpenGitGraph={() => {
-                    addTab({
-                      kind: 'git-history',
-                      label: 'Git History',
-                      cwd: workspacePath || homeDir,
-                    })
-                  }}
-                />
-              )}
-            </div>
+          <>
+            {/* Vertical sidebar rail */}
             <SidebarRail
               activeView={sidebarView}
               onSelectView={setSidebarView}
               changedCount={scm.changedCount}
             />
-          </div>
+            {/* Panel content */}
+            <div className="flex w-56 flex-shrink-0 flex-col border-r border-white/[0.06]">
+              <div className="min-h-0 flex-1 overflow-hidden">
+                {sidebarView === 'explorer' ? (
+                  <ExplorerPanel onFileSelect={handleFileSelect} />
+                ) : sidebarView === 'search' ? (
+                  <SearchPanel onFileSelect={handleFileSelect} />
+                ) : sidebarView === 'debugger' ? (
+                  <DebuggerPanel />
+                ) : sidebarView === 'preview' ? (
+                  <div className="flex h-full items-center justify-center text-xs text-[var(--color-text-secondary)]">
+                    Open preview via tab
+                  </div>
+                ) : sidebarView === 'markdown' ? (
+                  <div className="flex h-full items-center justify-center text-xs text-[var(--color-text-secondary)]">
+                    Open markdown via tab
+                  </div>
+                ) : sidebarView === 'git-history' ? (
+                  <div className="flex h-full items-center justify-center text-xs text-[var(--color-text-secondary)]">
+                    Git History — open via sidebar
+                  </div>
+                ) : sidebarView === 'extensions' ? (
+                  <div className="flex h-full items-center justify-center text-xs text-[var(--color-text-secondary)]">
+                    Extensions — coming soon
+                  </div>
+                ) : sidebarView === 'account' ? (
+                  <div className="flex h-full items-center justify-center text-xs text-[var(--color-text-secondary)]">
+                    Account — coming soon
+                  </div>
+                ) : (
+                  <SourceControlPanel
+                    open={true}
+                    sourceControl={scm}
+                    onOpenDiff={(input) => handleFileSelect(input.path)}
+                    onOpenGitGraph={() => {
+                      addTab({
+                        kind: 'git-history',
+                        label: 'Git History',
+                        cwd: workspacePath || homeDir,
+                      })
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+          </>
         )}
         <div className="flex-1 overflow-hidden relative">
           {tabs.map((tab) => (
@@ -232,7 +297,7 @@ function AppContent() {
             </div>
           )}
         </div>
-        {showAi && (
+        {aiMode === 'side-panel' && (
           <div className="w-80 flex-shrink-0">
             <Suspense fallback={<div className="w-80 flex-shrink-0" />}>
               <AiPanel />
@@ -241,14 +306,79 @@ function AppContent() {
         )}
       </div>
       <StatusBar />
+
+      {/* Floating UI */}
+      {(aiMode === 'hidden' || aiMode === 'detached') && <AiFloatingBubble />}
+      {aiMode === 'floating' && <AiChatPopup />}
     </main>
   )
 }
 
+function AiDetachedWindow() {
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    loadFromStore().then(() => setLoaded(true))
+
+    import('@tauri-apps/api/webviewWindow').then(({ getCurrentWebviewWindow }) => {
+      getCurrentWebviewWindow().listen('re-attach-ai', async () => {
+        const { emitTo } = await import('@tauri-apps/api/event')
+        await emitTo('main', 're-attach-ai', {})
+        const { getCurrentWindow } = await import('@tauri-apps/api/window')
+        await getCurrentWindow().close()
+      })
+    })
+  }, [])
+
+  if (!loaded) return null
+
+  return (
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
+      <div className="flex items-center justify-between border-b border-[var(--color-border)] px-3 py-1.5 select-none" data-tauri-drag-region>
+        <span className="flex items-center gap-1.5 text-xs font-semibold" style={{ background: 'linear-gradient(90deg, #ff9f45, #6c7cff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          🔥 Flame AI
+        </span>
+        <button
+          onClick={async () => {
+            const { saveToStore } = await import('./modules/ai/store/chatStore')
+            await saveToStore()
+            const { emitTo } = await import('@tauri-apps/api/event')
+            await emitTo('main', 're-attach-ai', {})
+            const { getCurrentWindow } = await import('@tauri-apps/api/window')
+            await getCurrentWindow().close()
+          }}
+          className="rounded border border-[var(--color-border)] bg-[var(--color-raised)] px-2 py-0.5 text-[10px] text-[var(--color-text-secondary)] transition-colors hover:border-[rgba(255,106,0,0.3)] hover:text-[#ff9f45]"
+        >
+          ← Attach to main
+        </button>
+      </div>
+      <div className="flex-1 overflow-hidden">
+          <Suspense fallback={null}>
+          <AiPanel detached />
+        </Suspense>
+      </div>
+    </div>
+  )
+}
+
 function App() {
+  const [isAiWindow, setIsAiWindow] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    if (isTauri()) {
+      import('@tauri-apps/api/webviewWindow').then(({ getCurrentWebviewWindow }) => {
+        setIsAiWindow(getCurrentWebviewWindow().label === 'ai-chat')
+      })
+    } else {
+      setIsAiWindow(false)
+    }
+  }, [])
+
+  if (isAiWindow === null) return null
+
   return (
     <ThemeProvider>
-      <AppContent />
+      {isAiWindow ? <AiDetachedWindow /> : <AppContent />}
     </ThemeProvider>
   )
 }

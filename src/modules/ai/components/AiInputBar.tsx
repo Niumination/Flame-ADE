@@ -1,8 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { ArrowRight02Icon, StopIcon } from '@hugeicons/core-free-icons'
+import { StopIcon } from '@hugeicons/core-free-icons'
 import { cn } from '@/lib/utils'
 import { VoiceInput } from './VoiceInput'
 
@@ -43,28 +42,67 @@ export function AiInputBar({ onSend, onStop, isStreaming, placeholder = 'Tanya A
   }, [onVoiceInput])
 
   return (
-    <div className={cn('flex items-end gap-2 border-t border-border/60 bg-card p-3', className)}>
-      <Textarea
-        ref={textareaRef}
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        className="min-h-9 max-h-32 flex-1 resize-none text-sm"
-        rows={1}
-      />
-      {onVoiceInput && (
-        <VoiceInput onTranscript={handleVoiceInput} disabled={voiceDisabled || isStreaming} />
-      )}
-      {isStreaming ? (
-        <Button variant="destructive" size="icon" onClick={onStop} title="Hentikan">
-          <HugeiconsIcon icon={StopIcon} size={16} strokeWidth={2} />
-        </Button>
-      ) : (
-        <Button variant="default" size="icon" onClick={handleSend} disabled={!input.trim()} title="Kirim">
-          <HugeiconsIcon icon={ArrowRight02Icon} size={16} strokeWidth={2} />
-        </Button>
-      )}
+    <div className={cn('border-t border-[var(--color-border)] bg-[var(--color-surface)] p-2.5', className)}>
+      <div
+        className="overflow-hidden rounded-lg transition-all duration-150"
+        style={{
+          background: 'var(--color-raised)',
+          border: '1px solid var(--color-border)',
+          boxShadow: 'none',
+        }}
+        onFocusCapture={() => {
+          const el = document.activeElement?.closest('[class*="overflow-hidden"]') as HTMLElement
+          if (el) {
+            el.style.borderColor = 'rgba(255,106,0,0.4)'
+            el.style.boxShadow = '0 0 0 2px rgba(255,106,0,0.08)'
+          }
+        }}
+        onBlurCapture={() => {
+          const el = document.querySelector('[style*="border-color: rgba(255,106,0,0.4)"]') as HTMLElement
+          if (el) {
+            el.style.borderColor = 'var(--color-border)'
+            el.style.boxShadow = 'none'
+          }
+        }}
+      >
+        <textarea
+          ref={textareaRef as any}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          className="w-full resize-none bg-transparent px-2.5 py-2 text-xs text-[var(--color-text-primary)] outline-none placeholder-[var(--color-text-muted)]"
+          rows={2}
+        />
+        <div className="flex items-center gap-1 border-t border-[var(--color-border)] px-2 py-1">
+          <button className="rounded p-0.5 text-xs text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)]" title="Attach file">📎</button>
+          {onVoiceInput && (
+            <VoiceInput onTranscript={handleVoiceInput} disabled={voiceDisabled || isStreaming} />
+          )}
+          {!onVoiceInput && (
+            <button className="rounded p-0.5 text-xs text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)]" title="Voice input">🎤</button>
+          )}
+          <button className="rounded p-0.5 text-xs text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)]" title="Context">@</button>
+          {isStreaming ? (
+            <Button variant="destructive" size="icon-sm" onClick={onStop} title="Hentikan" className="ml-auto h-7 w-7">
+              <HugeiconsIcon icon={StopIcon} size={14} strokeWidth={2} />
+            </Button>
+          ) : (
+            <button
+              className="ml-auto flex h-7 w-7 items-center justify-center rounded-md text-xs text-white shadow-sm transition-all hover:scale-105 disabled:opacity-40"
+              style={{
+                background: !input.trim() ? 'rgba(255,255,255,0.1)' : 'linear-gradient(135deg, #ff6a00, #6c7cff)',
+                boxShadow: input.trim() ? '0 2px 8px rgba(255,106,0,0.3)' : 'none',
+              }}
+              onClick={handleSend}
+              disabled={!input.trim()}
+              title="Kirim (Enter)"
+            >
+              ➤
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

@@ -34,14 +34,16 @@ describe('TabBar', () => {
     expect(screen.getByText('Terminal 2')).toBeInTheDocument()
   })
 
-  it('renders tab icons', () => {
+  it('renders tab color dots', () => {
     addTab('terminal', 'T')
     addTab('editor', 'E')
     addTab('git', 'G')
     render(<TabBar />)
-    expect(screen.getByText('⬛')).toBeInTheDocument()
-    expect(screen.getByText('📝')).toBeInTheDocument()
-    expect(screen.getByText('⎇')).toBeInTheDocument()
+    const dots = document.querySelectorAll('.tab-dot')
+    expect(dots.length).toBe(3)
+    expect(dots[0]).toHaveClass('terminal')
+    expect(dots[1]).toHaveClass('editor')
+    expect(dots[2]).toHaveClass('git')
   })
 
   it('adds terminal tab on add click', () => {

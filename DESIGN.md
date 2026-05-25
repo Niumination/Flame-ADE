@@ -68,15 +68,14 @@ semantic:
   error:    '#ef4444'   # merah — command exit non-0, git conflict
   info:     '#3b82f6'   # biru — info, git modified
   accent:   '#8b5cf6'   # ungu — AI mode indicator
+  flame:    '#ff6a00'   # brand — terminal prompt, active indicators
 ```
 
 ### 2.4 Theme Tokens (Current Implementation)
 
-Themes (4): `dark`, `light`, `tokyoNight`, `nord` — didefinisikan di `src/modules/theme/lib/useTheme.tsx`.
+Themes (11): `terax-default`, `tokyo-night`, `nord`, `catppuccin`, `gruvbox`, `rose-pine`, `sage`, `caffeine`, `tide`, `claude` — didefinisikan di `src/modules/theme/themes/`.
 
 **Planned Expansion:**
-- `dracula` — popular dev theme
-- `catppuccin-mocha` — warm dark theme
 - `one-dark` — Atom-inspired
 - `github-dark` / `github-light`
 
@@ -84,12 +83,15 @@ Themes (4): `dark`, `light`, `tokyoNight`, `nord` — didefinisikan di `src/modu
 
 | Elevation | Dark Token | Usage |
 |-----------|-----------|-------|
-| Background | `#0a0a0a` | Root background |
-| Surface 1 | `#18181b` | Tabs, sidebar |
-| Surface 2 | `#27272a` | Hover, active tab |
-| Surface 3 | `#3f3f46` | Modals, dropdowns, tooltips |
-| Text | `#e4e4e7` | Primary text |
-| Text secondary | `#a1a1aa` | Secondary text, labels |
+| Background | `#0a0a0f` | Root background |
+| Surface 1 | `#14141f` | Cards, tabs, sidebar body |
+| Surface 2 | `#1e1e2e` | Raised panels, popovers, secondary surfaces |
+| Surface 3 | `#25253a` | Overlays, dropdowns, tooltips |
+| Hover | `#2a2a40` | Hover states, active elements |
+| Border | `#2a2a3e` | Subtle borders, dividers |
+| Text | `#e4e4f0` | Primary text |
+| Text secondary | `#8888a0` | Secondary text, labels |
+| Text muted | `#555570` | Muted text, placeholders |
 
 ---
 
@@ -145,19 +147,19 @@ Base unit: **4px**
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  Header (32px) — traffic lights | toggles | title   │
+│  Header (44px) — traffic lights | toggles | title   │
 ├─────────────────────────────────────────────────────┤
-│  Tab Bar (28px) — scrollable tabs | + new tab       │
+│  Tab Bar (34px) — scrollable tabs | + new tab       │
 ├───────┬──────────────────────────────────┬──────────┤
 │       │                                  │          │
 │ Exp.  │     MAIN WORKSPACE               │  AI      │
 │ Panel │     (Terminal | Editor |         │  Panel   │
-│ 224px │      Preview | Git | Settings)   │  320px   │
+│ 240px │      Preview | Git | Settings)   │  320px   │
 │       │                                  │          │
 │       │     resizable split panes        │          │
 │       │     ⌄                            │          │
 ├───────┴──────────────────────────────────┴──────────┤
-│  Status Bar (24px) — cwd breadcrumb | mode indicator│
+│  Status Bar (28px) — cwd breadcrumb | mode indicator│
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -322,6 +324,10 @@ button:
     secondary: bg-muted text-foreground hover:bg-border
     ghost:     bg-transparent text-muted-foreground hover:text-foreground
     danger:    bg-destructive text-white hover:brightness-110
+  sizes:
+    icon-sm: 28px square, 10px icon
+    sm:      24px height, 6px padding
+    default: 28px height
 ```
 
 ### 9.2 Input Fields
@@ -350,17 +356,17 @@ select:
 ### 9.4 Tabs
 ```yaml
 tab:
-  height: 28px
+  height: 34px
   padding: 4px 12px
   font-size: 12px
   active:
-    background: neutral-800 (dark) / neutral-100 (light)
-    border-bottom: 2px solid brand-500
+    background: surface-1
+    border-bottom: 1.5px solid brand-500
   inactive:
     background: transparent
-    text-color: mutedForeground
+    text-color: text-muted
   hover:
-    background: neutral-800/50
+    background: hover (with 0.3 opacity)
   close-button:
     size: 14px
     visible: on hover
@@ -419,11 +425,11 @@ easing:
 ### 11.1 Color Contrast (WCAG AA)
 | Combination | Ratio | Status |
 |-------------|-------|--------|
-| Text `#e4e4e7` on bg `#0a0a0a` | 13.8:1 | ✅ AAA |
-| Text `#a1a1aa` on bg `#0a0a0a` | 7.2:1 | ✅ AA |
-| Text `#e4e4e7` on surface `#27272a` | 7.3:1 | ✅ AA |
-| Primary `#6366f1` on bg `#0a0a0a` | 6.1:1 | ✅ AA |
-| Error `#ef4444` on bg `#0a0a0a` | 4.8:1 | ✅ AA |
+| Text `#e4e4f0` on bg `#0a0a0f` | 13.9:1 | ✅ AAA |
+| Text `#8888a0` on bg `#0a0a0f` | 6.1:1 | ✅ AA |
+| Text `#e4e4f0` on surface `#1e1e2e` | 6.7:1 | ✅ AA |
+| Primary `#4338ca` on bg `#0a0a0f` | 7.4:1 | ✅ AA |
+| Error `#ef4444` on bg `#0a0a0f` | 4.9:1 | ✅ AA |
 
 ### 11.2 Keyboard Navigation
 - All interactive elements: focusable via Tab

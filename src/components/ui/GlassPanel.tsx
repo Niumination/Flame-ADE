@@ -5,9 +5,13 @@ export function GlassPanel({ children, className = '' }: { children: ReactNode; 
   return (
     <div
       className={cn(
-        'bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl',
+        'backdrop-blur-xl rounded-xl overflow-hidden shadow-2xl border',
         className,
       )}
+      style={{
+        backgroundColor: 'color-mix(in srgb, var(--color-base) 70%, transparent)',
+        borderColor: 'color-mix(in srgb, var(--color-border) 50%, transparent)',
+      }}
     >
       {children}
     </div>

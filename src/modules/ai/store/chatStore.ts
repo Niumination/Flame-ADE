@@ -37,10 +37,50 @@ interface ChatStore {
   clearMessages: (sessionId: string) => void
   updateLastMessage: (sessionId: string, content: string) => void
   setStreaming: (streaming: boolean) => void
+  restoreState: (state: SerializableState) => void
   refreshModels: () => Promise<void>
 }
 
 let sessionCounter = 0
+
+type SerializableState = {
+  sessions: ChatSession[]
+  activeSessionId: string | null
+  provider: AiProviderId
+  model: string
+}
+
+export async function saveToStore() {
+  try {
+    const { Store } = await import('@tauri-apps/plugin-store')
+    const store = await Store.load('ai-sessions.json')
+    const state = useChatStore.getState()
+    await store.set('sessions', state.sessions)
+    await store.set('activeSessionId', state.activeSessionId)
+    await store.set('provider', state.provider)
+    await store.set('model', state.model)
+    await store.save()
+  } catch { /* not in Tauri */ }
+}
+
+export async function loadFromStore() {
+  try {
+    const { Store } = await import('@tauri-apps/plugin-store')
+    const store = await Store.load('ai-sessions.json')
+    const sessions = await store.get<ChatSession[]>('sessions')
+    const activeSessionId = await store.get<string | null>('activeSessionId')
+    const provider = await store.get<AiProviderId>('provider')
+    const model = await store.get<string>('model')
+    if (sessions && sessions.length > 0) {
+      useChatStore.getState().restoreState({
+        sessions,
+        activeSessionId: activeSessionId || null,
+        provider: provider || 'opencode-zen',
+        model: model || 'claude-sonnet-4-5',
+      })
+    }
+  } catch { /* not in Tauri */ }
+}
 
 export const useChatStore = create<ChatStore>((set, get) => ({
   sessions: [],
@@ -133,6 +173,15 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
 
   setStreaming: (streaming) => set({ isStreaming: streaming }),
+
+  restoreState: (saved: SerializableState) => {
+    set({
+      sessions: saved.sessions,
+      activeSessionId: saved.activeSessionId,
+      provider: saved.provider,
+      model: saved.model,
+    })
+  },
 
   refreshModels: async () => {
     const models = await fetchOpenCodeZenModels()
